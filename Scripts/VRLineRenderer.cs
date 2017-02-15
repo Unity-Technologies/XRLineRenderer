@@ -13,23 +13,23 @@ public class VRLineRenderer : MonoBehaviour
 {
     // Stored Line Data
     [SerializeField]
-    protected Vector3[] m_Positions;
+    Vector3[] m_Positions;
 
     [SerializeField]
-    protected Color m_ColorStart = Color.white;
+    Color m_ColorStart = Color.white;
     [SerializeField]
-    protected Color m_ColorEnd = Color.white;
+    Color m_ColorEnd = Color.white;
 
     [SerializeField]
-    protected float m_WidthStart = 1.0f;
+    float m_WidthStart = 1.0f;
     [SerializeField]
-    protected float m_WidthEnd = 1.0f;
+    float m_WidthEnd = 1.0f;
 
     [SerializeField]
-    protected bool m_WorldSpaceData;
+    bool m_WorldSpaceData;
 
     // Cached Data
-    VRLineRendererInternal.MeshChain m_MeshData;
+    VRMeshChain m_VrMeshData;
     bool m_MeshNeedsRefreshing;
 
     // LineRenderer Interface
@@ -67,7 +67,7 @@ public class VRLineRenderer : MonoBehaviour
     {
         if (m_MeshNeedsRefreshing == true)
         {
-            m_MeshData.RefreshMesh();
+            m_VrMeshData.RefreshMesh();
             m_MeshNeedsRefreshing = false;
         }
     }
@@ -114,21 +114,21 @@ public class VRLineRenderer : MonoBehaviour
         var pointCounter = 0;
         var elementCounter = 0;
 
-        m_MeshData.SetElementColor(elementCounter, ref m_ColorStart);
+        m_VrMeshData.SetElementColor(elementCounter, ref m_ColorStart);
         elementCounter++;
         pointCounter++;
 
-        float stepSize = 1.0f / Mathf.Max((m_Positions.Length - 1.0f), 1.0f);
-        float stepPercent = stepSize;
+        var stepSize = 1.0f / Mathf.Max((m_Positions.Length - 1.0f), 1.0f);
+        var stepPercent = stepSize;
         var lastColor = m_ColorStart;
 
         while (pointCounter < m_Positions.Length)
         {
             var currentColor = Color.Lerp(m_ColorStart, m_ColorEnd, stepPercent);
-            m_MeshData.SetElementColor(elementCounter, ref lastColor, ref currentColor);
+            m_VrMeshData.SetElementColor(elementCounter, ref lastColor, ref currentColor);
             elementCounter++;
 
-            m_MeshData.SetElementColor(elementCounter, ref currentColor);
+            m_VrMeshData.SetElementColor(elementCounter, ref currentColor);
 
             lastColor = currentColor;
             elementCounter++;
@@ -137,7 +137,7 @@ public class VRLineRenderer : MonoBehaviour
         }
 
         // Dirty the color meshChain flags so the mesh gets new data
-        m_MeshData.SetMeshDataDirty(VRLineRendererInternal.MeshChain.MeshRefreshFlag.Colors);
+        m_VrMeshData.SetMeshDataDirty(VRMeshChain.MeshRefreshFlag.Colors);
         m_MeshNeedsRefreshing = true;
     }
 
@@ -158,14 +158,14 @@ public class VRLineRenderer : MonoBehaviour
         // Otherwise, do fast setting
         if (index > 0)
         {
-            m_MeshData.SetElementPipe((index * 2) - 1, ref m_Positions[index - 1], ref m_Positions[index]);
+            m_VrMeshData.SetElementPipe((index * 2) - 1, ref m_Positions[index - 1], ref m_Positions[index]);
         }
-        m_MeshData.SetElementPosition(index * 2, ref m_Positions[index]);
+        m_VrMeshData.SetElementPosition(index * 2, ref m_Positions[index]);
         if (index < (m_Positions.Length - 1))
         {
-            m_MeshData.SetElementPipe((index * 2) + 1, ref m_Positions[index], ref m_Positions[index + 1]);
+            m_VrMeshData.SetElementPipe((index * 2) + 1, ref m_Positions[index], ref m_Positions[index + 1]);
         }
-        m_MeshData.SetMeshDataDirty(VRLineRendererInternal.MeshChain.MeshRefreshFlag.Positions);
+        m_VrMeshData.SetMeshDataDirty(VRMeshChain.MeshRefreshFlag.Positions);
         m_MeshNeedsRefreshing = true;
     }
 
@@ -197,21 +197,21 @@ public class VRLineRenderer : MonoBehaviour
         // Otherwise, do fast setting
         var pointCounter = 0;
         var elementCounter = 0;
-        m_MeshData.SetElementPosition(elementCounter, ref m_Positions[pointCounter]);
+        m_VrMeshData.SetElementPosition(elementCounter, ref m_Positions[pointCounter]);
         elementCounter++;
         pointCounter++;
         while (pointCounter < m_Positions.Length)
         {
-            m_MeshData.SetElementPipe(elementCounter, ref m_Positions[pointCounter - 1], ref m_Positions[pointCounter]);
+            m_VrMeshData.SetElementPipe(elementCounter, ref m_Positions[pointCounter - 1], ref m_Positions[pointCounter]);
             elementCounter++;
-            m_MeshData.SetElementPosition(elementCounter, ref m_Positions[pointCounter]);
+            m_VrMeshData.SetElementPosition(elementCounter, ref m_Positions[pointCounter]);
 
             elementCounter++;
             pointCounter++;
         }
 
-        // Dirty all the MeshChain flags so everything gets refreshed
-        m_MeshData.SetMeshDataDirty(VRLineRendererInternal.MeshChain.MeshRefreshFlag.Positions);
+        // Dirty all the VRMeshChain flags so everything gets refreshed
+        m_VrMeshData.SetMeshDataDirty(VRMeshChain.MeshRefreshFlag.Positions);
         m_MeshNeedsRefreshing = true;
     }
 
@@ -263,29 +263,29 @@ public class VRLineRenderer : MonoBehaviour
         var elementCounter = 0;
 
         // We go through the element list, much like initialization, but only update the width part of the variables
-        m_MeshData.SetElementSize(elementCounter, m_WidthStart);
+        m_VrMeshData.SetElementSize(elementCounter, m_WidthStart);
         elementCounter++;
         pointCounter++;
 
-        float stepSize = 1.0f / Mathf.Max((m_Positions.Length - 1.0f), 1.0f);
-        float stepPercent = stepSize;
+        var stepSize = 1.0f / Mathf.Max((m_Positions.Length - 1.0f), 1.0f);
+        var stepPercent = stepSize;
         var lastWidth = m_WidthStart;
 
         while (pointCounter < m_Positions.Length)
         {
             var currentWidth = Mathf.Lerp(m_WidthStart, m_WidthEnd, stepPercent);
 
-            m_MeshData.SetElementSize(elementCounter, lastWidth, currentWidth);
+            m_VrMeshData.SetElementSize(elementCounter, lastWidth, currentWidth);
             elementCounter++;
-            m_MeshData.SetElementSize(elementCounter, currentWidth);
+            m_VrMeshData.SetElementSize(elementCounter, currentWidth);
             lastWidth = currentWidth;
             elementCounter++;
             pointCounter++;
             stepPercent += stepSize;
         }
 
-        // Dirty all the MeshChain flags so everything gets refreshed
-        m_MeshData.SetMeshDataDirty(VRLineRendererInternal.MeshChain.MeshRefreshFlag.Sizes);
+        // Dirty all the VRMeshChain flags so everything gets refreshed
+        m_VrMeshData.SetMeshDataDirty(VRMeshChain.MeshRefreshFlag.Sizes);
         m_MeshNeedsRefreshing = true;
     }
 
@@ -306,14 +306,14 @@ public class VRLineRenderer : MonoBehaviour
         // We need a control point for each billboard and a control point for each pipe connecting them together
         // Except for the end, which must be capped with another billboard.  This gives us (positions * 2) - 1
         var neededPoints = Mathf.Max((m_Positions.Length * 2) - 1, 0);
-        if (m_MeshData == null)
+        if (m_VrMeshData == null)
         {
-            m_MeshData = new VRLineRendererInternal.MeshChain();
+            m_VrMeshData = new VRMeshChain();
         }
-        if (m_MeshData.reservedElements != neededPoints)
+        if (m_VrMeshData.reservedElements != neededPoints)
         {
-            m_MeshData.worldSpaceData = useWorldSpace;
-            m_MeshData.GenerateMesh(gameObject, true, neededPoints);
+            m_VrMeshData.worldSpaceData = useWorldSpace;
+            m_VrMeshData.GenerateMesh(gameObject, true, neededPoints);
             performFullInitialize = true;
         }
         if (performFullInitialize == false)
@@ -329,14 +329,14 @@ public class VRLineRenderer : MonoBehaviour
         var elementCounter = 0;
 
         // Initialize the single starting point
-        m_MeshData.SetElementSize(elementCounter, m_WidthStart);
-        m_MeshData.SetElementPosition(elementCounter, ref m_Positions[pointCounter]);
-        m_MeshData.SetElementColor(elementCounter, ref m_ColorStart);
+        m_VrMeshData.SetElementSize(elementCounter, m_WidthStart);
+        m_VrMeshData.SetElementPosition(elementCounter, ref m_Positions[pointCounter]);
+        m_VrMeshData.SetElementColor(elementCounter, ref m_ColorStart);
         elementCounter++;
         pointCounter++;
 
-        float stepSize = 1.0f / Mathf.Max((m_Positions.Length - 1.0f), 1.0f);
-        float stepPercent = stepSize;
+        var stepSize = 1.0f / Mathf.Max((m_Positions.Length - 1.0f), 1.0f);
+        var stepPercent = stepSize;
         var lastWidth = m_WidthStart;
         var lastColor = m_ColorStart;
 
@@ -347,15 +347,15 @@ public class VRLineRenderer : MonoBehaviour
             var currentColor = Color.Lerp(m_ColorStart, m_ColorEnd, stepPercent);
 
             // Create a pipe from the previous point to here
-            m_MeshData.SetElementSize(elementCounter, lastWidth, currentWidth);
-            m_MeshData.SetElementPipe(elementCounter, ref m_Positions[pointCounter - 1], ref m_Positions[pointCounter]);
-            m_MeshData.SetElementColor(elementCounter, ref lastColor, ref currentColor);
+            m_VrMeshData.SetElementSize(elementCounter, lastWidth, currentWidth);
+            m_VrMeshData.SetElementPipe(elementCounter, ref m_Positions[pointCounter - 1], ref m_Positions[pointCounter]);
+            m_VrMeshData.SetElementColor(elementCounter, ref lastColor, ref currentColor);
             elementCounter++;
 
             // Now record our own point data
-            m_MeshData.SetElementSize(elementCounter, currentWidth);
-            m_MeshData.SetElementPosition(elementCounter, ref m_Positions[pointCounter]);
-            m_MeshData.SetElementColor(elementCounter, ref currentColor);
+            m_VrMeshData.SetElementSize(elementCounter, currentWidth);
+            m_VrMeshData.SetElementPosition(elementCounter, ref m_Positions[pointCounter]);
+            m_VrMeshData.SetElementColor(elementCounter, ref currentColor);
 
             // Go onto the next point while retaining previous values we might need to lerp between
             lastWidth = currentWidth;
@@ -365,8 +365,8 @@ public class VRLineRenderer : MonoBehaviour
             stepPercent += stepSize;
         }
 
-        // Dirty all the MeshChain flags so everything gets refreshed
-        m_MeshData.SetMeshDataDirty(VRLineRendererInternal.MeshChain.MeshRefreshFlag.All);
+        // Dirty all the VRMeshChain flags so everything gets refreshed
+        m_VrMeshData.SetMeshDataDirty(VRMeshChain.MeshRefreshFlag.All);
         m_MeshNeedsRefreshing = true;
         return true;
     }

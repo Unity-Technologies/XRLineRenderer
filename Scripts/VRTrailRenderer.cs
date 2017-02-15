@@ -10,27 +10,27 @@ using UnityEngine;
 [ExecuteInEditMode]
 public class VRTrailRenderer : MonoBehaviour
 {
-
-
     // Stored Trail Data
     [SerializeField]
-    protected int m_MaxTrailPoints = 20;	// How many points to store for tracing.  
+    [Tooltip("How many points to store for tracing.")]
+    int m_MaxTrailPoints = 20;
 
     [SerializeField]
-    protected bool m_StealLastPointWhenEmpty = true;	// Whether to use the last point or the first point of the trail when more are needed and none are available
+    [Tooltip("Whether to use the last point or the first point of the trail when more are needed and none are available.")]
+    bool m_StealLastPointWhenEmpty = true;
 
     [SerializeField]
-    protected Color[] m_Colors;
+    Color[] m_Colors;
 
     // Circular array support for trail point recording
-    protected Vector3[] m_Points;
-    protected float[] m_PointTimes;
-    protected int m_PointIndexStart = 0;
-    protected int m_PointIndexEnd = 0;
+    Vector3[] m_Points;
+    float[] m_PointTimes;
+    int m_PointIndexStart = 0;
+    int m_PointIndexEnd = 0;
 
 
     // Cached Data
-    VRLineRendererInternal.MeshChain m_MeshData;
+    VRMeshChain m_VrMeshData;
     bool m_MeshNeedsRefreshing = false;
     Renderer m_MeshRenderer;
     Vector3 m_LastRecordedPoint = Vector3.zero;
@@ -41,7 +41,7 @@ public class VRTrailRenderer : MonoBehaviour
     float m_EditorDeltaHelper;  // This lets us have access to a time data while not in play mode
 
     [SerializeField]
-    protected float m_Time = 5.0f;
+    float m_Time = 5.0f;
 
     // TrailRenderer Interface
     public float time
@@ -57,7 +57,7 @@ public class VRTrailRenderer : MonoBehaviour
     }
 
     [SerializeField]
-    protected float m_StartWidth = 1.0f;
+    float m_StartWidth = 1.0f;
 
     public float startWidth
     {
@@ -72,7 +72,7 @@ public class VRTrailRenderer : MonoBehaviour
     }
 
     [SerializeField]
-    protected float m_EndWidth = 1.0f;
+    float m_EndWidth = 1.0f;
 
     public float endWidth
     {
@@ -87,7 +87,7 @@ public class VRTrailRenderer : MonoBehaviour
     }
 
     [SerializeField]
-    protected float m_MinVertexDistance = 0.1f;
+    float m_MinVertexDistance = 0.1f;
 
     public float minVertexDistance
     {
@@ -102,7 +102,7 @@ public class VRTrailRenderer : MonoBehaviour
     }
 
     [SerializeField]
-    protected bool m_Autodestruct = false;
+    bool m_Autodestruct = false;
 
     public bool autodestruct
     {
@@ -117,7 +117,8 @@ public class VRTrailRenderer : MonoBehaviour
     }
 
     [SerializeField]
-    public bool m_SmoothInterpolation = false;  // With this enabled, the last point will smooth lerp between the last recorded anchor point and the one after it
+    [Tooltip("With this enabled, the last point will smooth lerp between the last recorded anchor point and the one after it")]
+    bool m_SmoothInterpolation = false; 
 
     public bool smoothInterpolation
     {
@@ -184,8 +185,8 @@ public class VRTrailRenderer : MonoBehaviour
             {
                 if (m_StealLastPointWhenEmpty)
                 {
-                    m_MeshData.SetElementSize(m_PointIndexStart * 2, 0);
-                    m_MeshData.SetElementSize((m_PointIndexStart * 2) + 1, 0);
+                    m_VrMeshData.SetElementSize(m_PointIndexStart * 2, 0);
+                    m_VrMeshData.SetElementSize((m_PointIndexStart * 2) + 1, 0);
                     m_PointIndexStart = (m_PointIndexStart + 1) % m_MaxTrailPoints;
                     m_PointIndexEnd = newEndIndex;
                     m_PointTimes[m_PointIndexEnd] = 0;
@@ -210,8 +211,8 @@ public class VRTrailRenderer : MonoBehaviour
             // If we've hit 0, this point is done for
             if (m_PointTimes[m_PointIndexStart] <= 0.0f)
             {
-                m_MeshData.SetElementSize(m_PointIndexStart * 2, 0);
-                m_MeshData.SetElementSize((m_PointIndexStart * 2) + 1, 0);
+                m_VrMeshData.SetElementSize(m_PointIndexStart * 2, 0);
+                m_VrMeshData.SetElementSize((m_PointIndexStart * 2) + 1, 0);
                 m_PointIndexStart = (m_PointIndexStart + 1) % m_MaxTrailPoints;
                 m_LastPointTime = m_PointTimes[m_PointIndexStart];
                 m_UsedPoints--;
@@ -238,13 +239,13 @@ public class VRTrailRenderer : MonoBehaviour
             {
                 var toNextPoint = 1.0f - (m_PointTimes[m_PointIndexStart] / m_LastPointTime);
                 var lerpPoint = Vector3.Lerp(m_Points[m_PointIndexStart], m_Points[nextIndex], toNextPoint);
-                m_MeshData.SetElementPosition((m_PointIndexStart * 2), ref lerpPoint);
-                m_MeshData.SetElementPipe((m_PointIndexStart * 2) + 1, ref lerpPoint, ref m_Points[nextIndex]);
+                m_VrMeshData.SetElementPosition((m_PointIndexStart * 2), ref lerpPoint);
+                m_VrMeshData.SetElementPipe((m_PointIndexStart * 2) + 1, ref lerpPoint, ref m_Points[nextIndex]);
             }
             else
             {
-                m_MeshData.SetElementPosition((m_PointIndexStart * 2), ref m_Points[m_PointIndexStart]);
-                m_MeshData.SetElementPipe((m_PointIndexStart * 2) + 1, ref m_Points[m_PointIndexStart], ref m_Points[nextIndex]);
+                m_VrMeshData.SetElementPosition((m_PointIndexStart * 2), ref m_Points[m_PointIndexStart]);
+                m_VrMeshData.SetElementPipe((m_PointIndexStart * 2) + 1, ref m_Points[m_PointIndexStart], ref m_Points[nextIndex]);
             }
             
             var prevIndex = m_PointIndexEnd - 1;
@@ -253,8 +254,8 @@ public class VRTrailRenderer : MonoBehaviour
                 prevIndex = m_MaxTrailPoints - 1;
             }
 
-            m_MeshData.SetElementPipe((prevIndex * 2) + 1, ref m_Points[prevIndex], ref m_Points[m_PointIndexEnd]);
-            m_MeshData.SetElementPosition((m_PointIndexEnd * 2), ref m_Points[m_PointIndexEnd]);
+            m_VrMeshData.SetElementPipe((prevIndex * 2) + 1, ref m_Points[prevIndex], ref m_Points[m_PointIndexEnd]);
+            m_VrMeshData.SetElementPosition((m_PointIndexEnd * 2), ref m_Points[m_PointIndexEnd]);
             
 
             // Go through all points and update size and color
@@ -271,26 +272,26 @@ public class VRTrailRenderer : MonoBehaviour
                 var currentWidth = Mathf.Lerp(m_EndWidth, m_StartWidth, currentBlend);
                 var nextWidth = Mathf.Lerp(m_EndWidth, m_StartWidth, nextBlend);
 
-                m_MeshData.SetElementSize(pointUpdateCounter * 2, currentWidth);
-                m_MeshData.SetElementSize((pointUpdateCounter * 2) + 1, currentWidth, nextWidth);
+                m_VrMeshData.SetElementSize(pointUpdateCounter * 2, currentWidth);
+                m_VrMeshData.SetElementSize((pointUpdateCounter * 2) + 1, currentWidth, nextWidth);
 
                 var currentColor = GetLerpedColor(colorValue);
                 var nextColor = GetLerpedColor(colorValue - blendStep);
                 
-                m_MeshData.SetElementColor(pointUpdateCounter * 2, ref currentColor);
-                m_MeshData.SetElementColor((pointUpdateCounter * 2) + 1, ref currentColor, ref nextColor);
+                m_VrMeshData.SetElementColor(pointUpdateCounter * 2, ref currentColor);
+                m_VrMeshData.SetElementColor((pointUpdateCounter * 2) + 1, ref currentColor, ref nextColor);
 
                 pointUpdateCounter = (pointUpdateCounter + 1) % m_MaxTrailPoints;
                 pointCount++;
                 colorValue -= blendStep;
             }
 
-            m_MeshData.SetElementSize((m_PointIndexEnd * 2), m_StartWidth);
-            m_MeshData.SetElementColor((m_PointIndexEnd * 2), ref m_Colors[0]);
+            m_VrMeshData.SetElementSize((m_PointIndexEnd * 2), m_StartWidth);
+            m_VrMeshData.SetElementColor((m_PointIndexEnd * 2), ref m_Colors[0]);
 
-            m_MeshData.SetMeshDataDirty(VRLineRendererInternal.MeshChain.MeshRefreshFlag.All);
+            m_VrMeshData.SetMeshDataDirty(VRMeshChain.MeshRefreshFlag.All);
 
-            m_MeshData.RefreshMesh();
+            m_VrMeshData.RefreshMesh();
         }
     }
 
@@ -358,15 +359,15 @@ public class VRTrailRenderer : MonoBehaviour
         // We make this a circular trail so the update logic is easier.  This gives us (position * 2)
         var neededPoints = Mathf.Max((m_MaxTrailPoints * 2), 0);
 
-        if (m_MeshData == null)
+        if (m_VrMeshData == null)
         {
-            m_MeshData = new VRLineRendererInternal.MeshChain();
+            m_VrMeshData = new VRMeshChain();
         }
 
-        if (m_MeshData.reservedElements != neededPoints)
+        if (m_VrMeshData.reservedElements != neededPoints)
         {
-            m_MeshData.worldSpaceData = true;
-            m_MeshData.GenerateMesh(gameObject, true, neededPoints);
+            m_VrMeshData.worldSpaceData = true;
+            m_VrMeshData.GenerateMesh(gameObject, true, neededPoints);
 
             if (neededPoints == 0)
             {
@@ -379,26 +380,26 @@ public class VRTrailRenderer : MonoBehaviour
             var zeroColor = new Color(0,0,0,0);
 
             // Initialize everything to 0 so we don't render any trails at first
-            m_MeshData.SetElementColor(0, ref zeroColor);
+            m_VrMeshData.SetElementColor(0, ref zeroColor);
             while (pointCounter < m_Points.Length)
             {
                 // Start point
-                m_MeshData.SetElementSize(elementCounter, 0);
-                m_MeshData.SetElementPosition(elementCounter, ref zeroVec);
+                m_VrMeshData.SetElementSize(elementCounter, 0);
+                m_VrMeshData.SetElementPosition(elementCounter, ref zeroVec);
                 elementCounter++;
 
                 // Pipe to the next point
-                m_MeshData.SetElementSize(elementCounter, 0);
-                m_MeshData.SetElementPipe(elementCounter, ref zeroVec, ref zeroVec);
+                m_VrMeshData.SetElementSize(elementCounter, 0);
+                m_VrMeshData.SetElementPipe(elementCounter, ref zeroVec, ref zeroVec);
 
                 // Go onto the next point while retaining previous values we might need to lerp between
                 elementCounter++;
                 pointCounter++;
             }
 
-            // Dirty all the MeshChain flags so everything gets refreshed
+            // Dirty all the VRMeshChain flags so everything gets refreshed
             m_MeshRenderer.enabled = false;
-            m_MeshData.SetMeshDataDirty(VRLineRendererInternal.MeshChain.MeshRefreshFlag.All);
+            m_VrMeshData.SetMeshDataDirty(VRMeshChain.MeshRefreshFlag.All);
             m_MeshNeedsRefreshing = true;
         }
         return true;

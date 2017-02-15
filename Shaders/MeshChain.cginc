@@ -51,8 +51,8 @@
         // We calculate the distance this billboard or pipe expands at each end
         // We use this for the vertex deformation and proper non-perspective texture mapping
         #if LINE_FIXED_WIDTH
-            half expandDistanceSource = clamp(_lineRadius.x * o.pos.z * .1, _lineRadius.y, _lineRadius.z) * v.texcoord.z;
-            half expandDistanceDest = clamp(_lineRadius.x * neighborPos.z * .1, _lineRadius.y, _lineRadius.z) * v.texcoord.w;
+            half expandDistanceSource = clamp(_lineRadius.x * o.pos.w * .1, _lineRadius.y, _lineRadius.z) * v.texcoord.z;
+            half expandDistanceDest = clamp(_lineRadius.x * neighborPos.w * .1, _lineRadius.y, _lineRadius.z) * v.texcoord.w;
         #else
             half expandDistanceSource = _lineRadius * .1 * v.texcoord.z;
             half expandDistanceDest = _lineRadius * .1 * v.texcoord.w;
