@@ -32,8 +32,12 @@ public class VRMeshChain
     Transform m_OwnerTransform;
 
     bool m_WorldSpaceData;
-    // Stored mesh data we use to update our runtime mesh
+
+    // Whether the control points of this mesh chain have been referenced in world or local space
+	// This makes sure the bounding box of the mesh is updated appropriately for culling
     public bool worldSpaceData { get { return m_WorldSpaceData; } set { m_WorldSpaceData = value; } }
+
+	// How many primitives/quads this mesh chain supports and has reserved memory for
     public int reservedElements { get; private set; }
 
     public VRMeshChain()
