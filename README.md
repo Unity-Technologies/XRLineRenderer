@@ -3,7 +3,7 @@ A VR-Optimized line renderer that is also capable of producing very inexpensive 
 
 ## Setup and usage
 
-1. Place the VRLineRenderer folder into the assets folder of your project.
+1. Place the VRLineRenderer folder into Assets\XR Utilities\VRLineRenderer in your project.
 
 2. Add a VRLineRenderer or VRTrailRenderer component to your gameobject.  The interface is nearly identical to the built in Unity Line and Trail Renderers.
 
@@ -24,3 +24,7 @@ Line Scaled by Depth - Turning this option off means the line will stay the same
 
 ## Custom VR Line Rendering
 The Scripts\Meshchain class provides everything you need to make your own custom line rendering constructs.  VRLineRenderer and VRTrailRenderer emulate what the classic Unity components provide, but there are many more use cases out there.
+
+
+### Project Settings
+If you plan on making changes to The VR Line Renderer and/or contributing back, then you'll need to set the `Asset Serialization` property under Edit->Project Settings->Editor to `Force Text`
