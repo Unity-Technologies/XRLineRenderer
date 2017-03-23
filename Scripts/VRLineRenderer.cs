@@ -216,7 +216,8 @@ public class VRLineRenderer : MonoBehaviour
     }
 
     /// <summary>
-    /// Sets the number of billboard-line chains.  This function regenerates the point list, so use it sparingly.
+    /// Sets the number of billboard-line chains. This function regenerates the point list if the
+    /// number of vertex points changes, so use it sparingly.
     /// </summary>
     public void SetVertexCount(int count)
     {
@@ -240,6 +241,14 @@ public class VRLineRenderer : MonoBehaviour
 
         // Do an initialization, this changes everything
         Initialize(true);
+    }
+    
+    /// <summary>
+    /// Get the number of billboard-line chains.
+    /// <summary
+    public int GetVertexCount()
+    {
+        return m_Positions.Length;
     }
 
     /// <summary>
