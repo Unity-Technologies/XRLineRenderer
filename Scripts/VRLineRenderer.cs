@@ -88,6 +88,14 @@ public class VRLineRenderer : MonoBehaviour
         // If we did not initialize, refresh all the properties instead
         Initialize(true);
     }
+    
+    /// <summary>
+    /// Set both the start and end colors of the line
+    /// </summary>
+    public void SetColors(Color color)
+    {
+        SetColors(color, color);
+    }
 
     /// <summary>
     /// Set the line color at the start and at the end
