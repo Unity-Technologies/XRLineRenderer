@@ -51,6 +51,8 @@ public class VRLineRenderer : MonoBehaviour
 
     public float widthStart { get { return m_WidthStart; } }
     public float widthEnd { get { return m_WidthEnd; } }
+    public Color colorStart { get { return m_ColorStart; } }
+    public Color colorEnd { get { return m_ColorEnd; } }
 
     /// <summary>
     /// Ensures the lines have all their data precached upon loading
