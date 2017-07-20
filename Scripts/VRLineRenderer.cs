@@ -53,6 +53,11 @@ public class VRLineRenderer : MonoBehaviour
     public float widthEnd { get { return m_WidthEnd; } }
 
     /// <summary>
+    /// Return an array whose constituents are the start and end colors, in that order
+    /// </summary>
+    public Color[] colors { get { return new[]{m_ColorStart, m_ColorEnd}; } }
+
+    /// <summary>
     /// Ensures the lines have all their data precached upon loading
     /// </summary>
     void Awake()
