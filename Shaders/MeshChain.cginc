@@ -1,5 +1,6 @@
 #ifndef MESH_CHAIN
 #define MESH_CHAIN
+// UNITY_SHADER_NO_UPGRADE
 
     half4 _Color;		// What color to tint the line
     half4 _lineSettings;	// Settings for how to shade the line - basically applying a levels filter to the gradient

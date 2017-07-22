@@ -1,4 +1,6 @@
 ﻿using UnityEngine;
+using UnityEngine.Serialization;
+using UnityEngine.Video;
 
 /// <summary>
 /// A VR-Focused drop-in replacement for the Line Renderer
@@ -11,48 +13,181 @@
 [ExecuteInEditMode]
 public class VRLineRenderer : MonoBehaviour
 {
+    static readonly GradientColorKey k_DefaultStartColor = new GradientColorKey(Color.white, 0);
+    static readonly GradientColorKey k_DefaultEndColor = new GradientColorKey(Color.white, 1);
+    static readonly GradientAlphaKey k_DefaultStartAlpha = new GradientAlphaKey(1,0);
+    static readonly GradientAlphaKey k_DefaultEndAlpha = new GradientAlphaKey(1,1);
+
+    [SerializeField]
+    [Tooltip("Materials to use when rendering.")]
+    Material[] m_Materials;
+
     // Stored Line Data
     [SerializeField]
     Vector3[] m_Positions;
 
     [SerializeField]
-    Color m_ColorStart = Color.white;
-    [SerializeField]
-    Color m_ColorEnd = Color.white;
+    [FormerlySerializedAs("m_WorldSpaceData")]
+    [Tooltip("Draw lines in worldspace (or local space)")]
+    bool m_UseWorldSpace;
 
     [SerializeField]
-    float m_WidthStart = 1.0f;
-    [SerializeField]
-    float m_WidthEnd = 1.0f;
+    [Tooltip("Connect the first and last vertices, to create a loop.")]
+    bool m_Loop;
 
     [SerializeField]
-    bool m_WorldSpaceData;
+    [Tooltip("The multiplier applied to the curve, describing the width (in world space) along the line.")]
+    float m_Width = 1.0f;
+
+    [SerializeField]
+    [Tooltip("The curve describing the width of the line at various points along its length.")]
+    AnimationCurve m_WidthCurve = new AnimationCurve();
+
+    [SerializeField]
+    [Tooltip("The gradient describing color along the line.")]
+    Gradient m_Color = new Gradient();
 
     // Cached Data
     VRMeshChain m_VrMeshData;
     bool m_MeshNeedsRefreshing;
+    float m_StepSize = 1.0f;
 
-    // LineRenderer Interface
     /// <summary>
-    /// If enabled, the lines are defined in world space.
-    /// This means the object's position is ignored and the lines are rendered around the world origin.
+    /// Draw lines in worldspace (or local space)
     /// </summary>
     public bool useWorldSpace
     {
         get
         {
-            return m_WorldSpaceData;
+            return m_UseWorldSpace;
         }
         set
         {
-            m_WorldSpaceData = value;
+            m_UseWorldSpace = value;
         }
     }
 
-    public float widthStart { get { return m_WidthStart; } }
-    public float widthEnd { get { return m_WidthEnd; } }
-    public Color colorStart { get { return m_ColorStart; } }
-    public Color colorEnd { get { return m_ColorEnd; } }
+    /// <summary>
+    /// Set the width at the start of the line.
+    /// </summary>
+    public float widthStart
+    {
+        get { return m_WidthCurve.Evaluate(0) * m_Width; }
+        set
+        {
+            m_WidthCurve.keys[0].value = value;
+            UpdateWidth();
+        }
+    }
+
+    /// <summary>
+    /// Set the width at the end of the line.
+    /// </summary>
+    public float widthEnd
+    {
+        get { return m_WidthCurve.Evaluate(1) * m_Width; }
+        set
+        {
+            var lastIndex = m_WidthCurve.keys.Length - 1;
+            m_WidthCurve.keys[lastIndex].value = value;
+            UpdateWidth();
+        }
+    }
+
+    /// <summary>
+    /// Set an overall multiplier that is applied to the LineRenderer.widthCurve to get the final width of the line.
+    /// </summary>
+    public float widthMultiplier
+    {
+        get { return m_Width; }
+        set
+        {
+            m_Width = value;
+            UpdateWidth();
+        }
+    }
+
+    /// <summary>
+    /// Set the curve describing the width of the line at various points along its length.
+    /// </summary>
+    public AnimationCurve widthCurve
+    {
+        get { return m_WidthCurve; }
+        set 
+        {
+            m_WidthCurve = value ?? new AnimationCurve(new Keyframe(0,1.0f));
+            UpdateWidth();
+        }
+    }
+
+    /// <summary>
+    /// Set the color gradient describing the color of the line at various points along its length.
+    /// </summary>
+    public Gradient colorGradient
+    {
+        get { return m_Color; }
+        set
+        {
+            if (m_Color == value)
+            {
+                return;
+            }
+            if (value == null)
+            {
+                m_Color = new Gradient { alphaKeys = new []{ k_DefaultStartAlpha, k_DefaultEndAlpha }, colorKeys = new []{ k_DefaultStartColor, k_DefaultEndColor }, mode = GradientMode.Blend };
+            }
+            m_Color = colorGradient;
+            UpdateColors();
+        }
+    }
+
+    /// <summary>
+    /// Set the color at the start of the line.
+    /// </summary>
+    public Color colorStart
+    {
+        get { return m_Color.Evaluate(0); }
+        set
+        {
+            var flatColor = value;
+            flatColor.a = 1.0f;
+            m_Color.colorKeys[0].color = flatColor;
+            m_Color.alphaKeys[0].alpha = value.a;
+            UpdateColors();
+        }
+    }
+
+    /// <summary>
+    /// Set the color at the end of the line.
+    /// </summary>
+    public Color colorEnd
+    {
+        get { return m_Color.Evaluate(1); }
+        set
+        {
+            var lastColorIndex = m_Color.colorKeys.Length - 1;
+            var lastAlphaIndex = m_Color.alphaKeys.Length - 1;
+            var flatColor = value;
+            flatColor.a = 1.0f;
+            m_Color.colorKeys[lastColorIndex].color = flatColor;
+            m_Color.alphaKeys[lastAlphaIndex].alpha = value.a;
+            UpdateColors();
+        }
+    }
+
+    void OnValidate()
+    {
+        var meshRenderer = GetComponent<MeshRenderer>();
+        meshRenderer.hideFlags = HideFlags.HideInInspector;
+        var meshFilter = GetComponent<MeshFilter>();
+        meshFilter.hideFlags = HideFlags.HideInInspector;
+
+        if (m_Materials == null)
+        {
+            m_Materials = meshRenderer.sharedMaterials;
+        }
+        meshRenderer.sharedMaterials = m_Materials;
+    }
 
     /// <summary>
     /// Ensures the lines have all their data precached upon loading
@@ -92,58 +227,6 @@ public class VRLineRenderer : MonoBehaviour
     }
 
     /// <summary>
-    /// Set the line color at the start and at the end
-    /// </summary>
-    public void SetColors(Color start, Color end)
-    {
-        // Worth detecting a no op consideirng how much this function can potentially do
-        if (start == m_ColorStart && end == m_ColorEnd)
-        {
-            return;
-        }
-
-        // Update internal data
-        m_ColorStart = start;
-        m_ColorEnd = end;
-
-        // See if the data needs initializing
-        if (Initialize())
-        {
-            return;
-        }
-
-        // If it doesn't, go through each point and set the data
-        var pointCounter = 0;
-        var elementCounter = 0;
-
-        m_VrMeshData.SetElementColor(elementCounter, ref m_ColorStart);
-        elementCounter++;
-        pointCounter++;
-
-        var stepSize = 1.0f / Mathf.Max((m_Positions.Length - 1.0f), 1.0f);
-        var stepPercent = stepSize;
-        var lastColor = m_ColorStart;
-
-        while (pointCounter < m_Positions.Length)
-        {
-            var currentColor = Color.Lerp(m_ColorStart, m_ColorEnd, stepPercent);
-            m_VrMeshData.SetElementColor(elementCounter, ref lastColor, ref currentColor);
-            elementCounter++;
-
-            m_VrMeshData.SetElementColor(elementCounter, ref currentColor);
-
-            lastColor = currentColor;
-            elementCounter++;
-            pointCounter++;
-            stepPercent += stepSize;
-        }
-
-        // Dirty the color meshChain flags so the mesh gets new data
-        m_VrMeshData.SetMeshDataDirty(VRMeshChain.MeshRefreshFlag.Colors);
-        m_MeshNeedsRefreshing = true;
-    }
-
-    /// <summary>
     /// Sets the position of the vertex in the line.
     /// </summary>
     public void SetPosition(int index, Vector3 position)
@@ -158,24 +241,27 @@ public class VRLineRenderer : MonoBehaviour
         }
 
         // Otherwise, do fast setting
-        if (index > 0)
+        var prevIndex = (index - 1 + m_Positions.Length) % m_Positions.Length;
+        var endIndex = (index + 1) % m_Positions.Length;
+
+        if (index > 0 || m_Loop)
         {
-            m_VrMeshData.SetElementPipe((index * 2) - 1, ref m_Positions[index - 1], ref m_Positions[index]);
+            m_VrMeshData.SetElementPipe((index * 2) - 1, ref m_Positions[prevIndex], ref m_Positions[index]);
         }
+
         m_VrMeshData.SetElementPosition(index * 2, ref m_Positions[index]);
-        if (index < (m_Positions.Length - 1))
+        if (index < (m_Positions.Length - 1) || m_Loop)
         {
-            m_VrMeshData.SetElementPipe((index * 2) + 1, ref m_Positions[index], ref m_Positions[index + 1]);
+            m_VrMeshData.SetElementPipe((index * 2) + 1, ref m_Positions[index], ref m_Positions[endIndex]);
         }
         m_VrMeshData.SetMeshDataDirty(VRMeshChain.MeshRefreshFlag.Positions);
         m_MeshNeedsRefreshing = true;
     }
 
     /// <summary>
-    /// Sets the positions of all vertices in the line
-    /// This method is preferred to SetPosition for updating multiple points, as it is more efficient to set all positions using a single command than to set each position individually.
+    /// Updates the widths along the line
     /// </summary>
-    public void SetPositions(Vector3[] newPositions, bool knownSizeChange = false)
+    void SetPositions(Vector3[] newPositions, bool knownSizeChange = false)
     {
         // Update internal data
         if (m_Positions == null || newPositions.Length != m_Positions.Length)
@@ -210,6 +296,10 @@ public class VRLineRenderer : MonoBehaviour
 
             elementCounter++;
             pointCounter++;
+        }
+        if (m_Loop)
+        {
+            m_VrMeshData.SetElementPipe(elementCounter, ref m_Positions[pointCounter - 1], ref m_Positions[0]);
         }
 
         // Dirty all the VRMeshChain flags so everything gets refreshed
@@ -254,15 +344,58 @@ public class VRLineRenderer : MonoBehaviour
     }
 
     /// <summary>
+    /// Updates the colors that make up the line
+    /// </summary>
+    void UpdateColors()
+    {
+        // See if the data needs initializing
+        if (Initialize())
+        {
+            return;
+        }
+
+        // If it doesn't, go through each point and set the data
+        var pointCounter = 0;
+        var elementCounter = 0;
+        var stepPercent = 0.0f;
+
+        var lastColor = m_Color.Evaluate(stepPercent);
+        m_VrMeshData.SetElementColor(elementCounter, ref lastColor);
+        elementCounter++;
+        pointCounter++;
+        stepPercent += m_StepSize;
+
+        while (pointCounter < m_Positions.Length)
+        {
+            var currentColor = m_Color.Evaluate(stepPercent);
+            m_VrMeshData.SetElementColor(elementCounter, ref lastColor, ref currentColor);
+            elementCounter++;
+
+            m_VrMeshData.SetElementColor(elementCounter, ref currentColor);
+
+            lastColor = currentColor;
+            elementCounter++;
+            pointCounter++;
+            stepPercent += m_StepSize;
+        }
+
+        if (m_Loop)
+        {
+            lastColor = m_Color.Evaluate(stepPercent);
+            m_VrMeshData.SetElementColor(elementCounter, ref lastColor);
+        }
+
+        // Dirty the color meshChain flags so the mesh gets new data
+        m_VrMeshData.SetMeshDataDirty(VRMeshChain.MeshRefreshFlag.Colors);
+        m_MeshNeedsRefreshing = true;
+    }
+
+    /// <summary>
     /// Sets the line width at the start and at the end.
     /// Note, varying line widths will have a segmented appearance vs. the smooth look one gets with the traditional linerenderer.
     /// </summary>
-    public void SetWidth(float start, float end)
+    void UpdateWidth()
     {
-        // Update internal data
-        m_WidthStart = start;
-        m_WidthEnd = end;
-
         // See if the data needs initializing
         if (Initialize())
         {
@@ -272,19 +405,19 @@ public class VRLineRenderer : MonoBehaviour
         // Otherwise, do fast setting
         var pointCounter = 0;
         var elementCounter = 0;
-
+        var stepPercent = 0.0f;
+        
         // We go through the element list, much like initialization, but only update the width part of the variables
-        m_VrMeshData.SetElementSize(elementCounter, m_WidthStart);
+        var lastWidth = m_WidthCurve.Evaluate(stepPercent) * m_Width;
+        m_VrMeshData.SetElementSize(elementCounter, lastWidth);
         elementCounter++;
         pointCounter++;
 
-        var stepSize = 1.0f / Mathf.Max((m_Positions.Length - 1.0f), 1.0f);
-        var stepPercent = stepSize;
-        var lastWidth = m_WidthStart;
+        stepPercent += m_StepSize;
 
         while (pointCounter < m_Positions.Length)
         {
-            var currentWidth = Mathf.Lerp(m_WidthStart, m_WidthEnd, stepPercent);
+            var currentWidth = m_WidthCurve.Evaluate(stepPercent) * m_Width;
 
             m_VrMeshData.SetElementSize(elementCounter, lastWidth, currentWidth);
             elementCounter++;
@@ -292,7 +425,13 @@ public class VRLineRenderer : MonoBehaviour
             lastWidth = currentWidth;
             elementCounter++;
             pointCounter++;
-            stepPercent += stepSize;
+            stepPercent += m_StepSize;
+        }
+
+        if (m_Loop)
+        {
+            var currentWidth = m_WidthCurve.Evaluate(stepPercent) * m_Width;
+            m_VrMeshData.SetElementSize(elementCounter, lastWidth, currentWidth);
         }
 
         // Dirty all the VRMeshChain flags so everything gets refreshed
@@ -317,6 +456,13 @@ public class VRLineRenderer : MonoBehaviour
         // We need a control point for each billboard and a control point for each pipe connecting them together
         // Except for the end, which must be capped with another billboard.  This gives us (positions * 2) - 1
         var neededPoints = Mathf.Max((m_Positions.Length * 2) - 1, 0);
+
+        // If we're looping, then we do need one more pipe
+        if (m_Loop)
+        {
+            neededPoints++;
+        }
+
         if (m_VrMeshData == null)
         {
             m_VrMeshData = new VRMeshChain();
@@ -333,29 +479,33 @@ public class VRLineRenderer : MonoBehaviour
         }
         if (neededPoints == 0)
         {
+            m_StepSize = 1.0f;
             return true;
         }
+        m_StepSize = 1.0f / Mathf.Max(m_Loop ? m_Positions.Length : m_Positions.Length - 1, 1.0f);
 
         var pointCounter = 0;
         var elementCounter = 0;
+        var stepPercent = 0.0f;
+
+        var lastColor = m_Color.Evaluate(stepPercent);
+        var lastWidth = m_WidthCurve.Evaluate(stepPercent) * m_Width;
 
         // Initialize the single starting point
-        m_VrMeshData.SetElementSize(elementCounter, m_WidthStart);
+        m_VrMeshData.SetElementSize(elementCounter, lastWidth);
         m_VrMeshData.SetElementPosition(elementCounter, ref m_Positions[pointCounter]);
-        m_VrMeshData.SetElementColor(elementCounter, ref m_ColorStart);
+        m_VrMeshData.SetElementColor(elementCounter, ref lastColor);
         elementCounter++;
         pointCounter++;
 
-        var stepSize = 1.0f / Mathf.Max((m_Positions.Length - 1.0f), 1.0f);
-        var stepPercent = stepSize;
-        var lastWidth = m_WidthStart;
-        var lastColor = m_ColorStart;
+        stepPercent += m_StepSize;
+        
 
         // Now do the chain
         while (pointCounter < m_Positions.Length)
         {
-            var currentWidth = Mathf.Lerp(m_WidthStart, m_WidthEnd, stepPercent);
-            var currentColor = Color.Lerp(m_ColorStart, m_ColorEnd, stepPercent);
+            var currentWidth = m_WidthCurve.Evaluate(stepPercent) * m_Width;
+            var currentColor = m_Color.Evaluate(stepPercent);
 
             // Create a pipe from the previous point to here
             m_VrMeshData.SetElementSize(elementCounter, lastWidth, currentWidth);
@@ -373,7 +523,16 @@ public class VRLineRenderer : MonoBehaviour
             lastColor = currentColor;
             elementCounter++;
             pointCounter++;
-            stepPercent += stepSize;
+            stepPercent += m_StepSize;
+        }
+
+        if (m_Loop)
+        {
+            var currentWidth = m_WidthCurve.Evaluate(stepPercent) * m_Width;
+            var currentColor = m_Color.Evaluate(stepPercent);
+            m_VrMeshData.SetElementSize(elementCounter, lastWidth, currentWidth);
+            m_VrMeshData.SetElementPipe(elementCounter, ref m_Positions[pointCounter - 1], ref m_Positions[0]);
+            m_VrMeshData.SetElementColor(elementCounter, ref lastColor, ref currentColor);
         }
 
         // Dirty all the VRMeshChain flags so everything gets refreshed
