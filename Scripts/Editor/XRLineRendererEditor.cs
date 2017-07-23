@@ -2,9 +2,9 @@
 
 namespace UnityEditor
 {
-    [CustomEditor(typeof(VRLineRenderer))]
+    [CustomEditor(typeof(XRLineRenderer))]
     [CanEditMultipleObjects]
-    public class VRLineRendererEditor : Editor
+    public class XRLineRendererEditor : Editor
     {
         SerializedProperty m_Materials;
         SerializedProperty m_Positions;

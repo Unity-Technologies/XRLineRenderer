@@ -30,7 +30,7 @@ public class VRTrailRenderer : MonoBehaviour
 
 
     // Cached Data
-    VRMeshChain m_VrMeshData;
+    XRMeshChain m_VrMeshData;
     bool m_MeshNeedsRefreshing = false;
     Renderer m_MeshRenderer;
     Vector3 m_LastRecordedPoint = Vector3.zero;
@@ -289,7 +289,7 @@ public class VRTrailRenderer : MonoBehaviour
             m_VrMeshData.SetElementSize((m_PointIndexEnd * 2), m_StartWidth);
             m_VrMeshData.SetElementColor((m_PointIndexEnd * 2), ref m_Colors[0]);
 
-            m_VrMeshData.SetMeshDataDirty(VRMeshChain.MeshRefreshFlag.All);
+            m_VrMeshData.SetMeshDataDirty(XRMeshChain.MeshRefreshFlag.All);
 
             m_VrMeshData.RefreshMesh();
         }
@@ -361,7 +361,7 @@ public class VRTrailRenderer : MonoBehaviour
 
         if (m_VrMeshData == null)
         {
-            m_VrMeshData = new VRMeshChain();
+            m_VrMeshData = new XRMeshChain();
         }
 
         if (m_VrMeshData.reservedElements != neededPoints)
@@ -399,7 +399,7 @@ public class VRTrailRenderer : MonoBehaviour
 
             // Dirty all the VRMeshChain flags so everything gets refreshed
             m_MeshRenderer.enabled = false;
-            m_VrMeshData.SetMeshDataDirty(VRMeshChain.MeshRefreshFlag.All);
+            m_VrMeshData.SetMeshDataDirty(XRMeshChain.MeshRefreshFlag.All);
             m_MeshNeedsRefreshing = true;
         }
         return true;

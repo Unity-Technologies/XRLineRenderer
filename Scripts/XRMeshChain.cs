@@ -7,7 +7,7 @@ using UnityEngine;
 /// If you need more custom/optimized access to this kind of mesh information, feel
 ///	free to hook into this structure directly.
 /// </summary>
-public class VRMeshChain
+public class XRMeshChain
 {
     [System.Flags]
     public enum MeshRefreshFlag
@@ -40,7 +40,7 @@ public class VRMeshChain
 	// How many primitives/quads this mesh chain supports and has reserved memory for
     public int reservedElements { get; private set; }
 
-    public VRMeshChain()
+    public XRMeshChain()
     {
         reservedElements = 0;
     }

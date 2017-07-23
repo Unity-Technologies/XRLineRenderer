@@ -10,7 +10,7 @@ using UnityEngine.Serialization;
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(MeshFilter))]
 [ExecuteInEditMode]
-public class VRLineRenderer : MonoBehaviour
+public class XRLineRenderer : MonoBehaviour
 {
     static readonly GradientColorKey k_DefaultStartColor = new GradientColorKey(Color.white, 0);
     static readonly GradientColorKey k_DefaultEndColor = new GradientColorKey(Color.white, 1);
@@ -47,7 +47,7 @@ public class VRLineRenderer : MonoBehaviour
     Gradient m_Color = new Gradient();
 
     // Cached Data
-    VRMeshChain m_VrMeshData;
+    XRMeshChain m_VrMeshData;
     bool m_MeshNeedsRefreshing;
     float m_StepSize = 1.0f;
 
@@ -238,7 +238,7 @@ public class VRLineRenderer : MonoBehaviour
     /// <summary>
     /// Allows the component to be referenced as a renderer, forwarding the MeshRenderer ahead
     /// </summary>
-    public static implicit operator Renderer(VRLineRenderer lr)
+    public static implicit operator Renderer(XRLineRenderer lr)
     {
         return lr.GetComponent<MeshRenderer>();
     }
@@ -282,7 +282,7 @@ public class VRLineRenderer : MonoBehaviour
         {
             m_VrMeshData.SetElementPipe((index * 2) + 1, ref m_Positions[index], ref m_Positions[endIndex]);
         }
-        m_VrMeshData.SetMeshDataDirty(VRMeshChain.MeshRefreshFlag.Positions);
+        m_VrMeshData.SetMeshDataDirty(XRMeshChain.MeshRefreshFlag.Positions);
         m_MeshNeedsRefreshing = true;
     }
 
@@ -333,7 +333,7 @@ public class VRLineRenderer : MonoBehaviour
         }
 
         // Dirty all the VRMeshChain flags so everything gets refreshed
-        m_VrMeshData.SetMeshDataDirty(VRMeshChain.MeshRefreshFlag.Positions);
+        m_VrMeshData.SetMeshDataDirty(XRMeshChain.MeshRefreshFlag.Positions);
         m_MeshNeedsRefreshing = true;
     }
 
@@ -417,7 +417,7 @@ public class VRLineRenderer : MonoBehaviour
         }
 
         // Dirty the color meshChain flags so the mesh gets new data
-        m_VrMeshData.SetMeshDataDirty(VRMeshChain.MeshRefreshFlag.Colors);
+        m_VrMeshData.SetMeshDataDirty(XRMeshChain.MeshRefreshFlag.Colors);
         m_MeshNeedsRefreshing = true;
     }
 
@@ -466,7 +466,7 @@ public class VRLineRenderer : MonoBehaviour
         }
 
         // Dirty all the VRMeshChain flags so everything gets refreshed
-        m_VrMeshData.SetMeshDataDirty(VRMeshChain.MeshRefreshFlag.Sizes);
+        m_VrMeshData.SetMeshDataDirty(XRMeshChain.MeshRefreshFlag.Sizes);
         m_MeshNeedsRefreshing = true;
     }
 
@@ -497,7 +497,7 @@ public class VRLineRenderer : MonoBehaviour
 
         if (m_VrMeshData == null)
         {
-            m_VrMeshData = new VRMeshChain();
+            m_VrMeshData = new XRMeshChain();
         }
         if (m_VrMeshData.reservedElements != neededPoints)
         {
@@ -568,7 +568,7 @@ public class VRLineRenderer : MonoBehaviour
         }
 
         // Dirty all the VRMeshChain flags so everything gets refreshed
-        m_VrMeshData.SetMeshDataDirty(VRMeshChain.MeshRefreshFlag.All);
+        m_VrMeshData.SetMeshDataDirty(XRMeshChain.MeshRefreshFlag.All);
         m_MeshNeedsRefreshing = true;
         return true;
     }
