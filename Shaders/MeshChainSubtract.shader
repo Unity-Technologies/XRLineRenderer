@@ -53,7 +53,7 @@ Shader "VRLineRenderer/MeshChain - Subtractive"
             // prevent overlapping lines from adding too much color,
             // we set the alpha value to one after visiting a pixel.
             Blend OneMinusDstAlpha One, One One
-            BlendOp RevSub, Add
+            BlendOp RevSub, Max
             Cull Off
             Lighting Off
             ZWrite Off

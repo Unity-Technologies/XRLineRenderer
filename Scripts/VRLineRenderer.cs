@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEngine.Serialization;
-using UnityEngine.Video;
 
 /// <summary>
 /// A VR-Focused drop-in replacement for the Line Renderer
@@ -28,7 +27,7 @@ public class VRLineRenderer : MonoBehaviour
 
     [SerializeField]
     [FormerlySerializedAs("m_WorldSpaceData")]
-    [Tooltip("Draw lines in worldspace (or local space)")]
+    [Tooltip("Draw lines in worldspace (or local space) - driven via shader")]
     bool m_UseWorldSpace;
 
     [SerializeField]
@@ -132,11 +131,7 @@ public class VRLineRenderer : MonoBehaviour
             {
                 return;
             }
-            if (value == null)
-            {
-                m_Color = new Gradient { alphaKeys = new []{ k_DefaultStartAlpha, k_DefaultEndAlpha }, colorKeys = new []{ k_DefaultStartColor, k_DefaultEndColor }, mode = GradientMode.Blend };
-            }
-            m_Color = colorGradient;
+            m_Color = value ?? new Gradient { alphaKeys = new []{ k_DefaultStartAlpha, k_DefaultEndAlpha }, colorKeys = new []{ k_DefaultStartColor, k_DefaultEndColor }, mode = GradientMode.Blend };
             UpdateColors();
         }
     }
@@ -175,6 +170,10 @@ public class VRLineRenderer : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Cleans up the visible interface of the meshrenderer by hiding unneeded components
+    /// Also makes sure the animation curves are set up properly to defualts
+    /// </summary>
     void OnValidate()
     {
         var meshRenderer = GetComponent<MeshRenderer>();
@@ -187,6 +186,33 @@ public class VRLineRenderer : MonoBehaviour
             m_Materials = meshRenderer.sharedMaterials;
         }
         meshRenderer.sharedMaterials = m_Materials;
+
+        if (m_WidthCurve == null || m_WidthCurve.keys == null || m_WidthCurve.keys.Length == 0)
+        {
+            m_WidthCurve = new AnimationCurve(new Keyframe(0, 1.0f));
+        }
+        
+        m_Color = m_Color ?? new Gradient { alphaKeys = new[] { k_DefaultStartAlpha, k_DefaultEndAlpha }, colorKeys = new[] { k_DefaultStartColor, k_DefaultEndColor }, mode = GradientMode.Blend };
+
+        #if UNITY_EDITOR
+            UnityEditor.EditorApplication.delayCall += EditorCheckForUpdate;
+        #endif
+    }
+
+    void CopyWorldSpaceDataFromMaterial()
+    {
+        if (m_Materials != null && m_Materials.Length > 0)
+        {
+            var firstMaterial = m_Materials[0];
+            if (firstMaterial.HasProperty("_WorldData"))
+            {
+                m_UseWorldSpace = !Mathf.Approximately(firstMaterial.GetFloat("_WorldData"), 0.0f);
+            }
+            else
+            {
+                m_UseWorldSpace = false;
+            }
+        }
     }
 
     /// <summary>
@@ -229,6 +255,8 @@ public class VRLineRenderer : MonoBehaviour
     /// <summary>
     /// Sets the position of the vertex in the line.
     /// </summary>
+    /// <param name="index">Which vertex to set</param>
+    /// <param name="position">The new location in space of this vertex</param>
     public void SetPosition(int index, Vector3 position)
     {
         // Update internal data
@@ -259,8 +287,10 @@ public class VRLineRenderer : MonoBehaviour
     }
 
     /// <summary>
-    /// Updates the widths along the line
+    /// Sets all positions in the line. Cheaper than calling SetPosition repeatedly
     /// </summary>
+    /// <param name="newPositions">All of the new endpoints of the line</param>
+    /// <param name="knownSizeChange">Turn on to run a safety check to make sure the number of endpoints does not change (bad for garbage collection)</param>
     void SetPositions(Vector3[] newPositions, bool knownSizeChange = false)
     {
         // Update internal data
@@ -311,6 +341,7 @@ public class VRLineRenderer : MonoBehaviour
     /// Sets the number of billboard-line chains. This function regenerates the point list if the
     /// number of vertex points changes, so use it sparingly.
     /// </summary>
+    /// <param name="count">The new number of vertices in the line</param>
     public void SetVertexCount(int count)
     {
         // See if anything needs updating
@@ -446,6 +477,7 @@ public class VRLineRenderer : MonoBehaviour
     /// <returns>True if an initialization occurred, false if it was skipped</returns>
     protected bool Initialize(bool force = false)
     {
+        CopyWorldSpaceDataFromMaterial();
         if (m_Positions == null)
         {
             return false;
