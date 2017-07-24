@@ -1,14 +1,15 @@
 using UnityEngine;
 
 /// <summary>
-/// A VR-Focused drop-in replacement for the Line Renderer
+/// An XR-Focused drop-in replacement for the Trail Renderer
 /// This renderer draws fixed-width lines with simulated volume and glow.
-/// This has many of the advantages of the traditional Line Renderer, old-school system-level line rendering functions, and volumetric (a linked series of capsules or cubes) rendering
+/// This has many of the advantages of the traditional Line Renderer, old-school system-level line rendering functions, 
+/// and volumetric (a linked series of capsules or cubes) rendering
 /// </summary>
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(MeshFilter))]
 [ExecuteInEditMode]
-public class VRTrailRenderer : MonoBehaviour
+public class XRTrailRenderer : MonoBehaviour
 {
     // Stored Trail Data
     [SerializeField]
