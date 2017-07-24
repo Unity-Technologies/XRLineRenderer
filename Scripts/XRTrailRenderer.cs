@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 /// <summary>
@@ -9,7 +10,7 @@ using UnityEngine;
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(MeshFilter))]
 [ExecuteInEditMode]
-public class XRTrailRenderer : MonoBehaviour
+public class XRTrailRenderer : XRLineRendererBase
 {
     // Stored Trail Data
     [SerializeField]
@@ -21,7 +22,20 @@ public class XRTrailRenderer : MonoBehaviour
     bool m_StealLastPointWhenEmpty = true;
 
     [SerializeField]
-    Color[] m_Colors;
+    [Tooltip("How long the tail should be (second) [ 0, infinity ].")]
+    float m_Time = 5.0f;
+
+    [SerializeField]
+    [Tooltip("The minimum distance to spawn a new point on the trail [ 0, infinity ].")]
+    float m_MinVertexDistance = 0.1f;
+
+    [SerializeField]
+    [Tooltip("Destroy GameObject when there is no trail?")]
+    bool m_Autodestruct = false;
+
+    [SerializeField]
+    [Tooltip("With this enabled, the last point will smooth lerp between the last recorded anchor point and the one after it")]
+    bool m_SmoothInterpolation = false; 
 
     // Circular array support for trail point recording
     Vector3[] m_Points;
@@ -29,11 +43,7 @@ public class XRTrailRenderer : MonoBehaviour
     int m_PointIndexStart = 0;
     int m_PointIndexEnd = 0;
 
-
     // Cached Data
-    XRMeshChain m_VrMeshData;
-    bool m_MeshNeedsRefreshing = false;
-    Renderer m_MeshRenderer;
     Vector3 m_LastRecordedPoint = Vector3.zero;
 
     int m_UsedPoints;			// How many points we are currently rendering - for size/color blending
@@ -41,111 +51,55 @@ public class XRTrailRenderer : MonoBehaviour
 
     float m_EditorDeltaHelper;  // This lets us have access to a time data while not in play mode
 
-    [SerializeField]
-    float m_Time = 5.0f;
 
-    // TrailRenderer Interface
+    /// <summary>
+    /// How long does the trail take to fade out.
+    /// </summary>
     public float time
     {
-        get 
-        { 
-            return m_Time; 
-        }
-        set 
-        { 
-            m_Time = value; 
-        }
-    }
-
-    [SerializeField]
-    float m_StartWidth = 1.0f;
-
-    public float startWidth
-    {
-        get
-        {
-            return m_StartWidth;
-        }
-        set
-        {
-            m_StartWidth = value;
-        }
-    }
-
-    [SerializeField]
-    float m_EndWidth = 1.0f;
-
-    public float endWidth
-    {
-        get
-        {
-            return m_EndWidth;
-        }
-        set
-        {
-            m_EndWidth = value;
-        }
-    }
-
-    [SerializeField]
-    float m_MinVertexDistance = 0.1f;
-
-    public float minVertexDistance
-    {
-        get
-        {
-            return m_MinVertexDistance;
-        }
-        set
-        {
-            m_MinVertexDistance = value;
-        }
-    }
-
-    [SerializeField]
-    bool m_Autodestruct = false;
-
-    public bool autodestruct
-    {
-        get
-        {
-            return m_Autodestruct;
-        }
-        set
-        {
-            m_Autodestruct = value;
-        }
-    }
-
-    [SerializeField]
-    [Tooltip("With this enabled, the last point will smooth lerp between the last recorded anchor point and the one after it")]
-    bool m_SmoothInterpolation = false; 
-
-    public bool smoothInterpolation
-    {
-        get
-        {
-            return m_SmoothInterpolation;
-        }
-        set
-        {
-            m_SmoothInterpolation = value;
-        }
+        get { return m_Time; }
+        set { m_Time = value; }
     }
 
     /// <summary>
-    /// Ensures the trails have all their data precached upon loading
+    /// Set the minimum distance the trail can travel before a new vertex is added to it.
     /// </summary>
-    void Awake() 
+    public float minVertexDistance
     {
-        m_MeshRenderer = GetComponent<Renderer>();
-        Initialize();
+        get { return m_MinVertexDistance; }
+        set { m_MinVertexDistance = value; }
+    }
+
+    /// <summary>
+    /// Get the number of line segments in the trail
+    /// </summary>
+    public int positionCount
+    {
+        get { return m_UsedPoints; }
+    }
+
+    /// <summary>
+    /// Destroy GameObject when there is no trail?
+    /// </summary>
+    public bool autodestruct
+    {
+        get { return m_Autodestruct; }
+        set { m_Autodestruct = value; }
+    }
+
+    /// <summary>
+    /// Set if the last point will smooth lerp between the last recorded anchor point and the one after it
+    /// </summary>
+    public bool smoothInterpolation
+    {
+        get { return m_SmoothInterpolation; }
+        set { m_SmoothInterpolation = value; }
     }
 
     /// <summary>
     /// Updates the built-in mesh data for each control point of the trail
     /// </summary>
-    void LateUpdate()
+    protected override void LateUpdate()
     {
         // We do  the actual internal mesh updating as late as possible so nothing ends up a frame behind
         var deltaTime = Time.deltaTime;
@@ -186,15 +140,14 @@ public class XRTrailRenderer : MonoBehaviour
             {
                 if (m_StealLastPointWhenEmpty)
                 {
-                    m_VrMeshData.SetElementSize(m_PointIndexStart * 2, 0);
-                    m_VrMeshData.SetElementSize((m_PointIndexStart * 2) + 1, 0);
+                    m_XRMeshData.SetElementSize(m_PointIndexStart * 2, 0);
+                    m_XRMeshData.SetElementSize((m_PointIndexStart * 2) + 1, 0);
                     m_PointIndexStart = (m_PointIndexStart + 1) % m_MaxTrailPoints;
                     m_PointIndexEnd = newEndIndex;
                     m_PointTimes[m_PointIndexEnd] = 0;
                     m_LastPointTime = m_PointTimes[m_PointIndexStart];
                 }
             }
-
             m_Points[m_PointIndexEnd] = currentPoint;
 
             // Update the last recorded point
@@ -212,8 +165,8 @@ public class XRTrailRenderer : MonoBehaviour
             // If we've hit 0, this point is done for
             if (m_PointTimes[m_PointIndexStart] <= 0.0f)
             {
-                m_VrMeshData.SetElementSize(m_PointIndexStart * 2, 0);
-                m_VrMeshData.SetElementSize((m_PointIndexStart * 2) + 1, 0);
+                m_XRMeshData.SetElementSize(m_PointIndexStart * 2, 0);
+                m_XRMeshData.SetElementSize((m_PointIndexStart * 2) + 1, 0);
                 m_PointIndexStart = (m_PointIndexStart + 1) % m_MaxTrailPoints;
                 m_LastPointTime = m_PointTimes[m_PointIndexStart];
                 m_UsedPoints--;
@@ -230,6 +183,7 @@ public class XRTrailRenderer : MonoBehaviour
             m_MeshNeedsRefreshing = false;
             m_MeshRenderer.enabled = false;
         }
+
         if (m_MeshNeedsRefreshing == true)
         {
             m_MeshRenderer.enabled = true;
@@ -240,13 +194,13 @@ public class XRTrailRenderer : MonoBehaviour
             {
                 var toNextPoint = 1.0f - (m_PointTimes[m_PointIndexStart] / m_LastPointTime);
                 var lerpPoint = Vector3.Lerp(m_Points[m_PointIndexStart], m_Points[nextIndex], toNextPoint);
-                m_VrMeshData.SetElementPosition((m_PointIndexStart * 2), ref lerpPoint);
-                m_VrMeshData.SetElementPipe((m_PointIndexStart * 2) + 1, ref lerpPoint, ref m_Points[nextIndex]);
+                m_XRMeshData.SetElementPosition((m_PointIndexStart * 2), ref lerpPoint);
+                m_XRMeshData.SetElementPipe((m_PointIndexStart * 2) + 1, ref lerpPoint, ref m_Points[nextIndex]);
             }
             else
             {
-                m_VrMeshData.SetElementPosition((m_PointIndexStart * 2), ref m_Points[m_PointIndexStart]);
-                m_VrMeshData.SetElementPipe((m_PointIndexStart * 2) + 1, ref m_Points[m_PointIndexStart], ref m_Points[nextIndex]);
+                m_XRMeshData.SetElementPosition((m_PointIndexStart * 2), ref m_Points[m_PointIndexStart]);
+                m_XRMeshData.SetElementPipe((m_PointIndexStart * 2) + 1, ref m_Points[m_PointIndexStart], ref m_Points[nextIndex]);
             }
             
             var prevIndex = m_PointIndexEnd - 1;
@@ -254,45 +208,42 @@ public class XRTrailRenderer : MonoBehaviour
             {
                 prevIndex = m_MaxTrailPoints - 1;
             }
-
-            m_VrMeshData.SetElementPipe((prevIndex * 2) + 1, ref m_Points[prevIndex], ref m_Points[m_PointIndexEnd]);
-            m_VrMeshData.SetElementPosition((m_PointIndexEnd * 2), ref m_Points[m_PointIndexEnd]);
+            m_XRMeshData.SetElementPipe((prevIndex * 2) + 1, ref m_Points[prevIndex], ref m_Points[m_PointIndexEnd]);
+            m_XRMeshData.SetElementPosition((m_PointIndexEnd * 2), ref m_Points[m_PointIndexEnd]);
             
 
             // Go through all points and update size and color
             var pointUpdateCounter = m_PointIndexStart;
             var pointCount = 0;
-            var blendStep = 1.0f / m_UsedPoints;
-            var colorValue = 1.0f;
+            m_StepSize = (m_UsedPoints > 0) ? (1.0f / m_UsedPoints) : 1.0f;
+
+            var invPercent = 1.0f;
+            var lastWidth = m_WidthCurve.Evaluate(invPercent) * m_Width;
+            var lastColor = m_Color.Evaluate(invPercent);
+            invPercent -= m_StepSize;
 
             while (pointUpdateCounter != m_PointIndexEnd)
             {
-                var currentBlend = blendStep * pointCount;
-                var nextBlend = blendStep * (pointCount + 1.0f);
+                var nextWidth = m_WidthCurve.Evaluate(invPercent)*m_Width;
+                m_XRMeshData.SetElementSize(pointUpdateCounter * 2, lastWidth);
+                m_XRMeshData.SetElementSize((pointUpdateCounter * 2) + 1, lastWidth, nextWidth);
+                lastWidth = nextWidth;
 
-                var currentWidth = Mathf.Lerp(m_EndWidth, m_StartWidth, currentBlend);
-                var nextWidth = Mathf.Lerp(m_EndWidth, m_StartWidth, nextBlend);
-
-                m_VrMeshData.SetElementSize(pointUpdateCounter * 2, currentWidth);
-                m_VrMeshData.SetElementSize((pointUpdateCounter * 2) + 1, currentWidth, nextWidth);
-
-                var currentColor = GetLerpedColor(colorValue);
-                var nextColor = GetLerpedColor(colorValue - blendStep);
-                
-                m_VrMeshData.SetElementColor(pointUpdateCounter * 2, ref currentColor);
-                m_VrMeshData.SetElementColor((pointUpdateCounter * 2) + 1, ref currentColor, ref nextColor);
+                var nextColor = m_Color.Evaluate(invPercent);
+                m_XRMeshData.SetElementColor(pointUpdateCounter * 2, ref lastColor);
+                m_XRMeshData.SetElementColor((pointUpdateCounter * 2) + 1, ref lastColor, ref nextColor);
+                lastColor = nextColor;
 
                 pointUpdateCounter = (pointUpdateCounter + 1) % m_MaxTrailPoints;
                 pointCount++;
-                colorValue -= blendStep;
+                invPercent -= m_StepSize;
             }
-
-            m_VrMeshData.SetElementSize((m_PointIndexEnd * 2), m_StartWidth);
-            m_VrMeshData.SetElementColor((m_PointIndexEnd * 2), ref m_Colors[0]);
-
-            m_VrMeshData.SetMeshDataDirty(XRMeshChain.MeshRefreshFlag.All);
-
-            m_VrMeshData.RefreshMesh();
+            lastWidth = m_WidthCurve.Evaluate(0)*m_Width;
+            m_XRMeshData.SetElementSize((m_PointIndexEnd * 2), lastWidth);
+            lastColor = m_Color.Evaluate(0);
+            m_XRMeshData.SetElementColor((m_PointIndexEnd * 2), ref lastColor);
+            m_XRMeshData.SetMeshDataDirty(XRMeshChain.MeshRefreshFlag.All);
+            m_XRMeshData.RefreshMesh();
         }
     }
 
@@ -305,30 +256,41 @@ public class XRTrailRenderer : MonoBehaviour
         Initialize();
     }
 
-    // TrailRenderer Functions
     /// <summary>
     /// Removes all points from the TrailRenderer. Useful for restarting a trail from a new position.
     /// </summary>
     public void Clear()
     {
+        var zeroVec = Vector3.zero;
+        var zeroColor = new Color(0,0,0,0);
+
+        if (m_XRMeshData != null)
+        {
+            var elementCounter = 0;
+            var pointCounter = 0;
+            while (pointCounter < m_Points.Length)
+            {
+                // Start point
+                m_XRMeshData.SetElementSize(elementCounter, 0);
+                m_XRMeshData.SetElementPosition(elementCounter, ref zeroVec);
+                m_XRMeshData.SetElementColor(elementCounter, ref zeroColor);
+                elementCounter++;
+            
+                // Pipe to the next point
+                m_XRMeshData.SetElementSize(elementCounter, 0);
+                m_XRMeshData.SetElementPipe(elementCounter, ref zeroVec, ref zeroVec);
+                m_XRMeshData.SetElementColor(elementCounter, ref zeroColor);
+
+                // Go onto the next point while retaining previous values we might need to lerp between
+                elementCounter++;
+                pointCounter++;
+            }
+        }
+
         m_PointIndexStart = 0;
         m_PointIndexEnd = 0;
+        m_UsedPoints = 0;
         m_LastRecordedPoint = transform.position;
-    }
-
-    /// <summary>
-    /// Retrieves the blended color through any point on the trail's color chain
-    /// </summary>
-    /// <param name="percent">How far along the trail's color chain to get the color</param>
-    /// <returns>The blended color</returns>
-    protected Color GetLerpedColor(float percent)
-    {
-        var stretchedColorValue = percent * (m_Colors.Length);
-        var curColorIndex = Mathf.Clamp(Mathf.FloorToInt(stretchedColorValue), 0, m_Colors.Length - 1);
-        var nextColorIndex = Mathf.Clamp(Mathf.FloorToInt(stretchedColorValue + 1), 0, m_Colors.Length - 1);
-        var blendValue = stretchedColorValue % 1.0f;
-
-        return Color.Lerp(m_Colors[curColorIndex], m_Colors[nextColorIndex], blendValue);
     }
 
     /// <summary>
@@ -336,73 +298,62 @@ public class XRTrailRenderer : MonoBehaviour
     /// </summary>
     /// <param name="force">Whether or not to force a full rebuild of the mesh data</param>
     /// <returns>True if an initialization occurred, false if it was skipped</returns>
-    protected bool Initialize()
+    protected override bool Initialize(bool force = false)
     {
+        force = base.Initialize(force);
+
         m_MaxTrailPoints = Mathf.Max(m_MaxTrailPoints, 3);
+
         // If we have a point mismatch, we force this operation
         if (m_Points != null && m_MaxTrailPoints == m_Points.Length)
         {
+            if (force)
+            {
+                Clear();
+            }
             return false;
         }
         
         m_Points = new Vector3[m_MaxTrailPoints];
         m_PointTimes = new float[m_MaxTrailPoints];
-        Clear();
-
-        if (m_Colors == null || m_Colors.Length == 0)
-        {
-            m_Colors = new Color[1];
-            m_Colors[0] = Color.white;
-        }
 
         // For a trail renderer we assume one big chain
         // We need a control point for each billboard and a control point for each pipe connecting them together
         // We make this a circular trail so the update logic is easier.  This gives us (position * 2)
         var neededPoints = Mathf.Max((m_MaxTrailPoints * 2), 0);
 
-        if (m_VrMeshData == null)
+        if (m_XRMeshData == null)
         {
-            m_VrMeshData = new XRMeshChain();
+            m_XRMeshData = new XRMeshChain();
         }
-
-        if (m_VrMeshData.reservedElements != neededPoints)
+        if (m_XRMeshData.reservedElements != neededPoints)
         {
-            m_VrMeshData.worldSpaceData = true;
-            m_VrMeshData.GenerateMesh(gameObject, true, neededPoints);
+            m_XRMeshData.worldSpaceData = true;
+            m_XRMeshData.GenerateMesh(gameObject, true, neededPoints);
 
             if (neededPoints == 0)
             {
                 return true;
             }
-
-            var pointCounter = 0;
-            var elementCounter = 0;
-            var zeroVec = Vector3.zero;
-            var zeroColor = new Color(0,0,0,0);
-
-            // Initialize everything to 0 so we don't render any trails at first
-            m_VrMeshData.SetElementColor(0, ref zeroColor);
-            while (pointCounter < m_Points.Length)
-            {
-                // Start point
-                m_VrMeshData.SetElementSize(elementCounter, 0);
-                m_VrMeshData.SetElementPosition(elementCounter, ref zeroVec);
-                elementCounter++;
-
-                // Pipe to the next point
-                m_VrMeshData.SetElementSize(elementCounter, 0);
-                m_VrMeshData.SetElementPipe(elementCounter, ref zeroVec, ref zeroVec);
-
-                // Go onto the next point while retaining previous values we might need to lerp between
-                elementCounter++;
-                pointCounter++;
-            }
-
             // Dirty all the VRMeshChain flags so everything gets refreshed
             m_MeshRenderer.enabled = false;
-            m_VrMeshData.SetMeshDataDirty(XRMeshChain.MeshRefreshFlag.All);
+            m_XRMeshData.SetMeshDataDirty(XRMeshChain.MeshRefreshFlag.All);
             m_MeshNeedsRefreshing = true;
         }
+        Clear();
+
         return true;
+    }
+
+    // We don't update width or color of existing trail and rather let it be reflected as the trail continues on
+    protected override void UpdateWidth() { }
+    protected override void UpdateColors() { }
+
+    /// <summary>
+    /// Enables the internal mesh representing the line
+    /// </summary>
+    protected override void OnEnable()
+    { 
+        m_MeshRenderer.enabled = (m_PointIndexStart != m_PointIndexEnd);
     }
 }

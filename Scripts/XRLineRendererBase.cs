@@ -1,4 +1,5 @@
-﻿using UnityEngine;
+﻿using System;
+using UnityEngine;
 
 /// <summary>
 /// A unified base class for the XR Line Renderer and XR Trail Renderer
@@ -172,6 +173,17 @@ public abstract class XRLineRendererBase : MonoBehaviour
     }
 
     /// <summary>
+    /// Makes the sure mesh renderer reference is initialized before any functions try to access it
+    /// </summary>
+    protected virtual void Awake()
+    {
+        if (m_MeshRenderer == null)
+        {
+            m_MeshRenderer = GetComponent<MeshRenderer>();
+        }
+    }
+
+    /// <summary>
     /// Ensures the lines have all their data precached upon loading
     /// </summary>
     void Start()
@@ -182,7 +194,7 @@ public abstract class XRLineRendererBase : MonoBehaviour
     /// <summary>
     /// Does the actual internal mesh updating as late as possible so nothing ends up a frame behind
     /// </summary>
-    public virtual void LateUpdate()
+    protected virtual void LateUpdate()
     {
         if (m_MeshNeedsRefreshing == true)
         {
@@ -227,10 +239,6 @@ public abstract class XRLineRendererBase : MonoBehaviour
     /// <returns>True if an initialization occurred, false if it was skipped</returns>
     protected virtual bool Initialize(bool force = false)
     {
-        if (m_MeshRenderer == null)
-        {
-            m_MeshRenderer = GetComponent<MeshRenderer>();
-        }
         return force;
     }
 
