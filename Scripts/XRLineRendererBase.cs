@@ -143,11 +143,26 @@ public abstract class XRLineRendererBase : MonoBehaviour
         }
     }
 
+    void OnValidate()
+    {
+        SetupMeshBackend();
+        if (NeedsReinitialize())
+        {
+            #if UNITY_EDITOR
+                UnityEditor.EditorApplication.delayCall += EditorCheckForUpdate;
+            #endif
+        }
+        else
+        {
+            EditorCheckForUpdate();
+        }
+    }
+
     /// <summary>
     /// Cleans up the visible interface of the meshrenderer by hiding unneeded components
     /// Also makes sure the animation curves are set up properly to defualts
     /// </summary>
-    void OnValidate()
+    void SetupMeshBackend()
     {
         m_MeshRenderer = GetComponent<MeshRenderer>();
         m_MeshRenderer.hideFlags = HideFlags.HideInInspector;
@@ -164,12 +179,7 @@ public abstract class XRLineRendererBase : MonoBehaviour
         {
             m_WidthCurve = new AnimationCurve(new Keyframe(0, 1.0f));
         }
-        
         m_Color = m_Color ?? new Gradient { alphaKeys = new[] { k_DefaultStartAlpha, k_DefaultEndAlpha }, colorKeys = new[] { k_DefaultStartColor, k_DefaultEndColor }, mode = GradientMode.Blend };
-
-        #if UNITY_EDITOR
-            UnityEditor.EditorApplication.delayCall += EditorCheckForUpdate;
-        #endif
     }
 
     /// <summary>
@@ -177,10 +187,8 @@ public abstract class XRLineRendererBase : MonoBehaviour
     /// </summary>
     protected virtual void Awake()
     {
-        if (m_MeshRenderer == null)
-        {
-            m_MeshRenderer = GetComponent<MeshRenderer>();
-        }
+        SetupMeshBackend();
+        Initialize(true);
     }
 
     /// <summary>
@@ -218,6 +226,11 @@ public abstract class XRLineRendererBase : MonoBehaviour
     /// </summary>
     void EditorCheckForUpdate()
     {
+        // Because this gets delay-called, it can be referring to a destroyed component when a scene starts
+        if (this == null)
+        {
+            return;
+        }
         // If we did not initialize, refresh all the properties instead
         Initialize(true);
     }
@@ -240,6 +253,16 @@ public abstract class XRLineRendererBase : MonoBehaviour
     protected virtual bool Initialize(bool force = false)
     {
         return force;
+    }
+
+    /// <summary>
+    /// Tests if the mesh data for the renderer needs to be created or rebuilt.  Used
+    /// to delay updates if neccessary in the OnValidate function
+    /// </summary>
+    /// <returns></returns>
+    protected virtual bool NeedsReinitialize()
+    {
+        return true;
     }
 
     /// <summary>

@@ -217,30 +217,30 @@ public class XRTrailRenderer : XRLineRendererBase
             var pointCount = 0;
             m_StepSize = (m_UsedPoints > 0) ? (1.0f / m_UsedPoints) : 1.0f;
 
-            var invPercent = 1.0f;
-            var lastWidth = m_WidthCurve.Evaluate(invPercent) * m_Width;
-            var lastColor = m_Color.Evaluate(invPercent);
-            invPercent -= m_StepSize;
+            var percent = 0.0f;
+            var lastWidth = m_WidthCurve.Evaluate(percent) * m_Width;
+            var lastColor = m_Color.Evaluate(percent);
+            percent += m_StepSize;
 
             while (pointUpdateCounter != m_PointIndexEnd)
             {
-                var nextWidth = m_WidthCurve.Evaluate(invPercent)*m_Width;
+                var nextWidth = m_WidthCurve.Evaluate(percent)*m_Width;
                 m_XRMeshData.SetElementSize(pointUpdateCounter * 2, lastWidth);
                 m_XRMeshData.SetElementSize((pointUpdateCounter * 2) + 1, lastWidth, nextWidth);
                 lastWidth = nextWidth;
 
-                var nextColor = m_Color.Evaluate(invPercent);
+                var nextColor = m_Color.Evaluate(percent);
                 m_XRMeshData.SetElementColor(pointUpdateCounter * 2, ref lastColor);
                 m_XRMeshData.SetElementColor((pointUpdateCounter * 2) + 1, ref lastColor, ref nextColor);
                 lastColor = nextColor;
 
                 pointUpdateCounter = (pointUpdateCounter + 1) % m_MaxTrailPoints;
                 pointCount++;
-                invPercent -= m_StepSize;
+                percent += m_StepSize;
             }
-            lastWidth = m_WidthCurve.Evaluate(0)*m_Width;
+            lastWidth = m_WidthCurve.Evaluate(1)*m_Width;
             m_XRMeshData.SetElementSize((m_PointIndexEnd * 2), lastWidth);
-            lastColor = m_Color.Evaluate(0);
+            lastColor = m_Color.Evaluate(1);
             m_XRMeshData.SetElementColor((m_PointIndexEnd * 2), ref lastColor);
             m_XRMeshData.SetMeshDataDirty(XRMeshChain.MeshRefreshFlag.All);
             m_XRMeshData.RefreshMesh();
@@ -305,13 +305,13 @@ public class XRTrailRenderer : XRLineRendererBase
         m_MaxTrailPoints = Mathf.Max(m_MaxTrailPoints, 3);
 
         // If we have a point mismatch, we force this operation
-        if (m_Points != null && m_MaxTrailPoints == m_Points.Length)
+        if (m_Points != null && m_MaxTrailPoints == m_Points.Length && m_XRMeshData != null)
         {
             if (force)
             {
                 Clear();
             }
-            return false;
+            return false; 
         }
         
         m_Points = new Vector3[m_MaxTrailPoints];
@@ -344,6 +344,25 @@ public class XRTrailRenderer : XRLineRendererBase
 
         return true;
     }
+
+    protected override bool NeedsReinitialize()
+    {
+        // No mesh data means we definately need to reinitialize
+        if (m_XRMeshData == null)
+        {
+            return true;
+        }
+        // Mismatched point data means we definately need to reinitialize
+        if (m_Points == null || m_MaxTrailPoints != m_Points.Length)
+        {
+            return true;
+        }
+        m_MaxTrailPoints = Mathf.Max(m_MaxTrailPoints, 3);
+        var neededPoints = Mathf.Max((m_MaxTrailPoints * 2), 0);
+
+        return (m_XRMeshData.reservedElements != neededPoints);
+    }
+    
 
     // We don't update width or color of existing trail and rather let it be reflected as the trail continues on
     protected override void UpdateWidth() { }

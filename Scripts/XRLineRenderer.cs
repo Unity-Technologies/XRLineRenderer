@@ -41,11 +41,19 @@ public class XRLineRenderer : XRLineRendererBase
         }
     }
 
+    /// <summary>
+    /// Makes sure that the internal world space flag of the line renderer
+    /// matches the world space flag of the first material on the object
+    /// </summary>
     void CopyWorldSpaceDataFromMaterial()
     {
         if (m_Materials != null && m_Materials.Length > 0)
         {
             var firstMaterial = m_Materials[0];
+            if (firstMaterial == null)
+            {
+                return;
+            }
             if (firstMaterial.HasProperty("_WorldData"))
             {
                 m_UseWorldSpace = !Mathf.Approximately(firstMaterial.GetFloat("_WorldData"), 0.0f);
@@ -365,5 +373,27 @@ public class XRLineRenderer : XRLineRendererBase
         m_XRMeshData.SetMeshDataDirty(XRMeshChain.MeshRefreshFlag.All);
         m_MeshNeedsRefreshing = true;
         return true;
+    }
+
+    protected override bool NeedsReinitialize()
+    {
+        // No mesh data means we definately need to reinitialize
+        if (m_XRMeshData == null)
+        {
+            return true;
+        }
+
+        // If we have any positions, figure out how many points we need to render a line along it
+        var neededPoints = 0;
+        if (m_Positions != null)
+        {
+            neededPoints = Mathf.Max((m_Positions.Length * 2) - 1, 0);
+            if (m_Loop)
+            {
+                neededPoints++;
+            }
+        }
+
+        return (m_XRMeshData.reservedElements != neededPoints);
     }
 }
