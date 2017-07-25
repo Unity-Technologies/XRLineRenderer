@@ -7,7 +7,7 @@ using UnityEngine;
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(MeshFilter))]
 [ExecuteInEditMode]
-public abstract class XRLineRendererBase : MonoBehaviour
+public abstract class MeshChainRenderer : MonoBehaviour
 {
     static readonly GradientColorKey k_DefaultStartColor = new GradientColorKey(Color.white, 0);
     static readonly GradientColorKey k_DefaultEndColor = new GradientColorKey(Color.white, 1);
@@ -47,7 +47,9 @@ public abstract class XRLineRendererBase : MonoBehaviour
         get { return m_WidthCurve.Evaluate(0) * m_Width; }
         set
         {
-            m_WidthCurve.keys[0].value = value;
+            var keys = m_WidthCurve.keys;
+            keys[0].value = value;
+            m_WidthCurve.keys = keys;
             UpdateWidth();
         }
     }
@@ -60,8 +62,10 @@ public abstract class XRLineRendererBase : MonoBehaviour
         get { return m_WidthCurve.Evaluate(1) * m_Width; }
         set
         {
-            var lastIndex = m_WidthCurve.keys.Length - 1;
-            m_WidthCurve.keys[lastIndex].value = value;
+            var keys = m_WidthCurve.keys;
+            var lastIndex = keys.Length - 1;
+            keys[lastIndex].value = value;
+            m_WidthCurve.keys = keys;
             UpdateWidth();
         }
     }
@@ -104,7 +108,9 @@ public abstract class XRLineRendererBase : MonoBehaviour
             {
                 return;
             }
-            m_Color = value ?? new Gradient { alphaKeys = new []{ k_DefaultStartAlpha, k_DefaultEndAlpha }, colorKeys = new []{ k_DefaultStartColor, k_DefaultEndColor }, mode = GradientMode.Blend };
+            m_Color = value ?? new Gradient { alphaKeys = new []{ k_DefaultStartAlpha, k_DefaultEndAlpha }, 
+                                                colorKeys = new []{ k_DefaultStartColor, k_DefaultEndColor }, 
+                                                mode = GradientMode.Blend };
             UpdateColors();
         }
     }
@@ -117,10 +123,14 @@ public abstract class XRLineRendererBase : MonoBehaviour
         get { return m_Color.Evaluate(0); }
         set
         {
+            var colorKeys = m_Color.colorKeys;
+            var alphaKeys = m_Color.alphaKeys;
             var flatColor = value;
             flatColor.a = 1.0f;
-            m_Color.colorKeys[0].color = flatColor;
-            m_Color.alphaKeys[0].alpha = value.a;
+            colorKeys[0].color = flatColor;
+            alphaKeys[0].alpha = value.a;
+            m_Color.colorKeys = colorKeys;
+            m_Color.alphaKeys = alphaKeys;
             UpdateColors();
         }
     }
@@ -133,12 +143,16 @@ public abstract class XRLineRendererBase : MonoBehaviour
         get { return m_Color.Evaluate(1); }
         set
         {
-            var lastColorIndex = m_Color.colorKeys.Length - 1;
-            var lastAlphaIndex = m_Color.alphaKeys.Length - 1;
+            var colorKeys = m_Color.colorKeys;
+            var alphaKeys = m_Color.alphaKeys;
+            var lastColorIndex = colorKeys.Length - 1;
+            var lastAlphaIndex = alphaKeys.Length - 1;
             var flatColor = value;
             flatColor.a = 1.0f;
-            m_Color.colorKeys[lastColorIndex].color = flatColor;
-            m_Color.alphaKeys[lastAlphaIndex].alpha = value.a;
+            colorKeys[lastColorIndex].color = flatColor;
+            alphaKeys[lastAlphaIndex].alpha = value.a;
+            m_Color.colorKeys = colorKeys;
+            m_Color.alphaKeys = alphaKeys;
             UpdateColors();
         }
     }
@@ -179,7 +193,9 @@ public abstract class XRLineRendererBase : MonoBehaviour
         {
             m_WidthCurve = new AnimationCurve(new Keyframe(0, 1.0f));
         }
-        m_Color = m_Color ?? new Gradient { alphaKeys = new[] { k_DefaultStartAlpha, k_DefaultEndAlpha }, colorKeys = new[] { k_DefaultStartColor, k_DefaultEndColor }, mode = GradientMode.Blend };
+        m_Color = m_Color ?? new Gradient { alphaKeys = new[] { k_DefaultStartAlpha, k_DefaultEndAlpha },
+                                             colorKeys = new[] { k_DefaultStartColor, k_DefaultEndColor },
+                                             mode = GradientMode.Blend };
     }
 
     /// <summary>
@@ -192,12 +208,48 @@ public abstract class XRLineRendererBase : MonoBehaviour
     }
 
     /// <summary>
+    /// Makes the sure mesh renderer reference is initialized on reset of the component
+    /// </summary>
+    void Reset()
+    {
+        SetupMeshBackend();
+        Initialize(true);
+    }
+
+    /// <summary>
     /// Ensures the lines have all their data precached upon loading
     /// </summary>
     void Start()
     {
         Initialize();
     }
+
+#if UNITY_EDITOR
+    /// <summary>
+    /// Ensures the hidden mesh/meshfilters are destroyed if users are messing with the components in edit mode
+    /// </summary>
+    void OnDestroy()
+    {
+        if(!Application.isPlaying)
+        {
+            var rendererToDestroy = m_MeshRenderer;
+            var filterToDestroy = gameObject.GetComponent<MeshFilter>();
+
+            UnityEditor.EditorApplication.delayCall += ()=>
+            {
+                if (rendererToDestroy != null)
+                {
+                    DestroyImmediate(rendererToDestroy);
+                }
+                if (filterToDestroy != null)
+                {
+                    DestroyImmediate(filterToDestroy);
+                }
+            };
+
+        }
+    }
+#endif
 
     /// <summary>
     /// Does the actual internal mesh updating as late as possible so nothing ends up a frame behind
@@ -214,9 +266,9 @@ public abstract class XRLineRendererBase : MonoBehaviour
     /// <summary>
     /// Allows the component to be referenced as a renderer, forwarding the MeshRenderer ahead
     /// </summary>
-    public static implicit operator Renderer(XRLineRendererBase lr)
+    public static implicit operator Renderer(MeshChainRenderer lr)
     {
-        return lr.GetComponent<MeshRenderer>();
+        return lr.m_MeshRenderer;
     }
 
 

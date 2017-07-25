@@ -10,7 +10,7 @@ using UnityEngine.Serialization;
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(MeshFilter))]
 [ExecuteInEditMode]
-public class XRLineRenderer : XRLineRendererBase
+public class XRLineRenderer : MeshChainRenderer
 {
       // Stored Line Data
     [SerializeField]
@@ -66,6 +66,16 @@ public class XRLineRenderer : XRLineRendererBase
     }
 
     /// <summary>
+    /// Gets the position of the vertex in the line.
+    /// </summary>
+    /// <param name="index">The index of the position to retrieve</param>
+    /// <returns>The position at the specified index of the array</returns>
+    public Vector3 GetPosition(int index)
+    {
+        return m_Positions[index];
+    }
+
+    /// <summary>
     /// Sets the position of the vertex in the line.
     /// </summary>
     /// <param name="index">Which vertex to set</param>
@@ -100,11 +110,26 @@ public class XRLineRenderer : XRLineRendererBase
     }
 
     /// <summary>
+    /// Get the position of all vertices in the line.
+    /// </summary>
+    /// <param name="positions">The array of positions to retrieve. The array passed should be of at least numPositions in size.</param>
+    /// <returns>How many positions were actually stored in the output array.</returns>
+    public int GetPositions(Vector3[] positions)
+    {
+        if (m_Positions != null)
+        {
+            m_Positions.CopyTo(positions, 0);
+            return m_Positions.Length;
+        }
+        return 0;
+    }
+
+    /// <summary>
     /// Sets all positions in the line. Cheaper than calling SetPosition repeatedly
     /// </summary>
     /// <param name="newPositions">All of the new endpoints of the line</param>
     /// <param name="knownSizeChange">Turn on to run a safety check to make sure the number of endpoints does not change (bad for garbage collection)</param>
-    void SetPositions(Vector3[] newPositions, bool knownSizeChange = false)
+    public void SetPositions(Vector3[] newPositions, bool knownSizeChange = false)
     {
         // Update internal data
         if (m_Positions == null || newPositions.Length != m_Positions.Length)

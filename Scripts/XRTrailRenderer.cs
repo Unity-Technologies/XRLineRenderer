@@ -10,7 +10,7 @@ using UnityEngine;
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(MeshFilter))]
 [ExecuteInEditMode]
-public class XRTrailRenderer : XRLineRendererBase
+public class XRTrailRenderer : MeshChainRenderer
 {
     // Stored Trail Data
     [SerializeField]
@@ -224,7 +224,7 @@ public class XRTrailRenderer : XRLineRendererBase
 
             while (pointUpdateCounter != m_PointIndexEnd)
             {
-                var nextWidth = m_WidthCurve.Evaluate(percent)*m_Width;
+                var nextWidth = m_WidthCurve.Evaluate(percent) * m_Width;
                 m_XRMeshData.SetElementSize(pointUpdateCounter * 2, lastWidth);
                 m_XRMeshData.SetElementSize((pointUpdateCounter * 2) + 1, lastWidth, nextWidth);
                 lastWidth = nextWidth;
@@ -262,7 +262,7 @@ public class XRTrailRenderer : XRLineRendererBase
     public void Clear()
     {
         var zeroVec = Vector3.zero;
-        var zeroColor = new Color(0,0,0,0);
+        var zeroColor = new Color(0, 0, 0, 0);
 
         if (m_XRMeshData != null)
         {

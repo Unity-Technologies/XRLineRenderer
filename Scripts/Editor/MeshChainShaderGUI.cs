@@ -122,7 +122,6 @@ namespace UnityEditor
                 var depthScaleMode = true;
                 if (m_LineDepthScaleMode != null)
                 {
-//                    depthScaleMode = (m_LineDepthScaleMode.floatValue != 0.0f);
                     depthScaleMode = !Mathf.Approximately(m_LineDepthScaleMode.floatValue, 0.0f);
                     var newDepthScaleMode = EditorGUILayout.Toggle(Styles.lineRadiusDepthText, depthScaleMode);
                     if (newDepthScaleMode != depthScaleMode)
