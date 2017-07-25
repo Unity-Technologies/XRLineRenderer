@@ -45,8 +45,6 @@ public class XRTrailRenderer : MeshChainRenderer
 
     // Cached Data
     Vector3 m_LastRecordedPoint = Vector3.zero;
-
-    int m_UsedPoints;			// How many points we are currently rendering - for size/color blending
     float m_LastPointTime;
 
     float m_EditorDeltaHelper;  // This lets us have access to a time data while not in play mode
@@ -73,10 +71,7 @@ public class XRTrailRenderer : MeshChainRenderer
     /// <summary>
     /// Get the number of line segments in the trail
     /// </summary>
-    public int positionCount
-    {
-        get { return m_UsedPoints; }
-    }
+    public int positionCount { get; private set; }
 
     /// <summary>
     /// Destroy GameObject when there is no trail?
@@ -134,7 +129,7 @@ public class XRTrailRenderer : MeshChainRenderer
             {
                 m_PointIndexEnd = newEndIndex;
                 m_PointTimes[m_PointIndexEnd] = 0;
-                m_UsedPoints++;
+                positionCount++;
             }
             else
             {
@@ -169,7 +164,7 @@ public class XRTrailRenderer : MeshChainRenderer
                 m_XRMeshData.SetElementSize((m_PointIndexStart * 2) + 1, 0);
                 m_PointIndexStart = (m_PointIndexStart + 1) % m_MaxTrailPoints;
                 m_LastPointTime = m_PointTimes[m_PointIndexStart];
-                m_UsedPoints--;
+                positionCount--;
             }
         }
         
@@ -215,7 +210,7 @@ public class XRTrailRenderer : MeshChainRenderer
             // Go through all points and update size and color
             var pointUpdateCounter = m_PointIndexStart;
             var pointCount = 0;
-            m_StepSize = (m_UsedPoints > 0) ? (1.0f / m_UsedPoints) : 1.0f;
+            m_StepSize = (positionCount > 0) ? (1.0f / positionCount) : 1.0f;
 
             var percent = 0.0f;
             var lastWidth = m_WidthCurve.Evaluate(percent) * m_Width;
@@ -289,7 +284,7 @@ public class XRTrailRenderer : MeshChainRenderer
 
         m_PointIndexStart = 0;
         m_PointIndexEnd = 0;
-        m_UsedPoints = 0;
+        positionCount = 0;
         m_LastRecordedPoint = transform.position;
     }
 
@@ -329,6 +324,7 @@ public class XRTrailRenderer : MeshChainRenderer
         if (m_XRMeshData.reservedElements != neededPoints)
         {
             m_XRMeshData.worldSpaceData = true;
+            m_XRMeshData.centerAtRoot = true;
             m_XRMeshData.GenerateMesh(gameObject, true, neededPoints);
 
             if (neededPoints == 0)
@@ -363,11 +359,6 @@ public class XRTrailRenderer : MeshChainRenderer
         return (m_XRMeshData.reservedElements != neededPoints);
     }
     
-
-    // We don't update width or color of existing trail and rather let it be reflected as the trail continues on
-    protected override void UpdateWidth() { }
-    protected override void UpdateColors() { }
-
     /// <summary>
     /// Enables the internal mesh representing the line
     /// </summary>

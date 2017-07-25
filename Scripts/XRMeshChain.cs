@@ -33,12 +33,21 @@ public class XRMeshChain
 
     bool m_WorldSpaceData;
 
-    // Whether the control points of this mesh chain have been referenced in world or local space
-	// This makes sure the bounding box of the mesh is updated appropriately for culling
+    /// <summary>
+    /// Whether the control points of this mesh chain have been referenced in world or local space
+    /// This makes sure the bounding box of the mesh is updated appropriately for culling
+    /// </summary>
     public bool worldSpaceData { get { return m_WorldSpaceData; } set { m_WorldSpaceData = value; } }
 
-	// How many primitives/quads this mesh chain supports and has reserved memory for
+    /// <summary>
+    /// How many primitives/quads this mesh chain supports and has reserved memory for
+    /// </summary>
     public int reservedElements { get; private set; }
+
+    /// <summary>
+    /// If using world space data, this option will force the center of the bounding box to be the root
+    /// </summary>
+    public bool centerAtRoot { get; set; }
 
     public XRMeshChain()
     {
@@ -157,7 +166,7 @@ public class XRMeshChain
         if (m_WorldSpaceData == true)
         {
             var newBounds = m_Mesh.bounds;
-            newBounds.center = m_OwnerTransform.InverseTransformPoint(newBounds.center);
+            newBounds.center = centerAtRoot ? Vector3.zero : m_OwnerTransform.InverseTransformPoint(newBounds.center);
             m_Mesh.bounds = newBounds;
         }
     }

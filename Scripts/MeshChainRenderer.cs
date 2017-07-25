@@ -40,6 +40,42 @@ public abstract class MeshChainRenderer : MonoBehaviour
     protected float m_StepSize = 1.0f;
 
     /// <summary>
+    /// Returns the first instantiated Material assigned to the renderer.
+    /// </summary>
+    public virtual Material material
+    {
+        get { return m_MeshRenderer.material; }
+        set { m_MeshRenderer.material = value; }
+    }
+
+    /// <summary>
+    /// Returns all the instantiated materials of this object.
+    /// </summary>
+    public virtual Material[] materials
+    {
+        get { return m_MeshRenderer.materials; }
+        set { m_MeshRenderer.materials = value; }
+    }
+
+    /// <summary>
+    /// Returns the shared material of this object.
+    /// </summary>
+    public virtual Material sharedMaterial
+    {
+        get { return m_MeshRenderer.sharedMaterial; }
+        set { m_MeshRenderer.sharedMaterial = value; }
+    }
+
+    /// <summary>
+    /// Returns all shared materials of this object.
+    /// </summary>
+    public virtual Material[] SharedMaterials
+    {
+        get { return m_MeshRenderer.materials; }
+        set { m_MeshRenderer.sharedMaterials = value; }
+    }
+
+    /// <summary>
     /// Set the width at the start of the line.
     /// </summary>
     public float widthStart
@@ -157,6 +193,31 @@ public abstract class MeshChainRenderer : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// Resets the width to a straight curve at the given value
+    /// </summary>
+    /// <param name="newWidth">The new width for the curve to display</param>
+    public void SetTotalWidth(float newWidth)
+    {
+        m_Width = newWidth;
+        m_WidthCurve = new AnimationCurve(new Keyframe(0,1.0f));
+        UpdateWidth();
+    }
+
+    /// <summary>
+    /// Resets the color to a single value
+    /// </summary>
+    /// <param name="newColor">The new color for the curve to display</param>
+    public void SetTotalColor(Color newColor)
+    {
+        var flatColor = newColor;
+        flatColor.a = 1.0f;
+        m_Color = new Gradient { alphaKeys = new []{ new GradientAlphaKey(newColor.a, 0), new GradientAlphaKey(newColor.a, 1), }, 
+                                colorKeys = new []{ new GradientColorKey(flatColor, 0), new GradientColorKey(flatColor, 1) }, 
+                                mode = GradientMode.Blend };
+        UpdateColors();
+    }
+
     void OnValidate()
     {
         SetupMeshBackend();
@@ -237,13 +298,16 @@ public abstract class MeshChainRenderer : MonoBehaviour
 
             UnityEditor.EditorApplication.delayCall += ()=>
             {
-                if (rendererToDestroy != null)
+                if (!Application.isPlaying)
                 {
-                    DestroyImmediate(rendererToDestroy);
-                }
-                if (filterToDestroy != null)
-                {
-                    DestroyImmediate(filterToDestroy);
+                    if (rendererToDestroy != null)
+                    {
+                        DestroyImmediate(rendererToDestroy);
+                    }
+                    if (filterToDestroy != null)
+                    {
+                        DestroyImmediate(filterToDestroy);
+                    }
                 }
             };
 
@@ -290,13 +354,13 @@ public abstract class MeshChainRenderer : MonoBehaviour
     /// <summary>
     /// Updates any internal variables to represent the new color that has been applied
     /// </summary>
-    protected abstract void UpdateColors();
-    
+    protected virtual void UpdateColors() {}
+
     /// <summary>
     /// Updates any internal variables to represent the new width that has been applied
     /// </summary>
-    protected abstract void UpdateWidth();
-    
+    protected virtual void UpdateWidth() {}
+
     /// <summary>
     /// Ensures the mesh data for the renderer is created, and updates it if neccessary
     /// </summary>

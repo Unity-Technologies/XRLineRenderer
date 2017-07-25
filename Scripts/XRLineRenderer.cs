@@ -29,15 +29,45 @@ public class XRLineRenderer : MeshChainRenderer
     /// <summary>
     /// Draw lines in worldspace (or local space)
     /// </summary>
-    public bool useWorldSpace
+    public bool useWorldSpace { get { return m_UseWorldSpace; } }
+
+    public override Material material
     {
-        get
+        get { return m_MeshRenderer.material; }
+        set 
         {
-            return m_UseWorldSpace;
+            m_MeshRenderer.material = value;
+            CopyWorldSpaceDataFromMaterial();
         }
+    }
+
+    public override Material[] materials
+    {
+        get { return m_MeshRenderer.materials; }
         set
         {
-            m_UseWorldSpace = value;
+            m_MeshRenderer.materials = value;
+            CopyWorldSpaceDataFromMaterial();
+        }
+    }
+
+    public override Material sharedMaterial
+    {
+        get { return m_MeshRenderer.sharedMaterial; }
+        set
+        {
+            m_MeshRenderer.sharedMaterial = value;
+            CopyWorldSpaceDataFromMaterial();
+        }
+    }
+
+    public override Material[] SharedMaterials
+    {
+        get { return m_MeshRenderer.materials; }
+        set
+        {
+            m_MeshRenderer.sharedMaterials = value;
+            CopyWorldSpaceDataFromMaterial();
         }
     }
 
@@ -47,21 +77,18 @@ public class XRLineRenderer : MeshChainRenderer
     /// </summary>
     void CopyWorldSpaceDataFromMaterial()
     {
-        if (m_Materials != null && m_Materials.Length > 0)
+        var firstMaterial = m_MeshRenderer.sharedMaterial;
+        if (firstMaterial == null)
         {
-            var firstMaterial = m_Materials[0];
-            if (firstMaterial == null)
-            {
-                return;
-            }
-            if (firstMaterial.HasProperty("_WorldData"))
-            {
-                m_UseWorldSpace = !Mathf.Approximately(firstMaterial.GetFloat("_WorldData"), 0.0f);
-            }
-            else
-            {
-                m_UseWorldSpace = false;
-            }
+            return;
+        }
+        if (firstMaterial.HasProperty("_WorldData"))
+        {
+            m_UseWorldSpace = !Mathf.Approximately(firstMaterial.GetFloat("_WorldData"), 0.0f);
+        }
+        else
+        {
+            m_UseWorldSpace = false;
         }
     }
 
