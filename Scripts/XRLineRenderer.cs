@@ -113,8 +113,9 @@ public class XRLineRenderer : MeshChainRenderer
         m_Positions[index] = position;
 
         // See if the data needs initializing
-        if (Initialize())
+        if (NeedsReinitialize())
         {
+            Initialize();
             return;
         }
 
@@ -159,21 +160,14 @@ public class XRLineRenderer : MeshChainRenderer
     public void SetPositions(Vector3[] newPositions, bool knownSizeChange = false)
     {
         // Update internal data
-        if (m_Positions == null || newPositions.Length != m_Positions.Length)
+        m_Positions = newPositions;
+        if (NeedsReinitialize())
         {
             if (knownSizeChange == false)
             {
                 Debug.LogWarning("New positions does not match size of existing array.  Adjusting vertex count as well");
             }
-            m_Positions = newPositions;
-            Initialize(true);
-            return;
-        }
-        m_Positions = newPositions;
-
-        // See if the data needs initializing
-        if (Initialize())
-        {
+            Initialize();
             return;
         }
 
@@ -228,7 +222,7 @@ public class XRLineRenderer : MeshChainRenderer
         m_Positions = newPositions;
 
         // Do an initialization, this changes everything
-        Initialize(true);
+        Initialize();
     }
     
     /// <summary>
@@ -242,8 +236,9 @@ public class XRLineRenderer : MeshChainRenderer
     protected override void UpdateColors()
     {
         // See if the data needs initializing
-        if (Initialize())
+        if (NeedsReinitialize())
         {
+            Initialize();
             return;
         }
 
@@ -286,8 +281,9 @@ public class XRLineRenderer : MeshChainRenderer
     protected override void UpdateWidth()
     {
         // See if the data needs initializing
-        if (Initialize())
+        if (NeedsReinitialize())
         {
+            Initialize();
             return;
         }
 
@@ -328,27 +324,23 @@ public class XRLineRenderer : MeshChainRenderer
         m_MeshNeedsRefreshing = true;
     }
 
-    protected override bool Initialize(bool force = false)
+    protected override void Initialize()
     {
-        var performFullInitialize = base.Initialize(force);
-
+        base.Initialize();
         CopyWorldSpaceDataFromMaterial();
+
         if (m_Positions == null)
         {
-            return false;
+            m_Positions = new Vector3[0];
         }
- 
+
         // For a line renderer we assume one big chain
         // We need a control point for each billboard and a control point for each pipe connecting them together
         // Except for the end, which must be capped with another billboard.  This gives us (positions * 2) - 1
-        var neededPoints = Mathf.Max((m_Positions.Length * 2) - 1, 0);
-
         // If we're looping, then we do need one more pipe
-        if (m_Loop)
-        {
-            neededPoints++;
-        }
-
+        var neededPoints = m_Loop ? 1 : 0;
+        neededPoints = Mathf.Max(neededPoints + (m_Positions.Length * 2) - 1, 0);
+ 
         if (m_XRMeshData == null)
         {
             m_XRMeshData = new XRMeshChain();
@@ -357,16 +349,13 @@ public class XRLineRenderer : MeshChainRenderer
         {
             m_XRMeshData.worldSpaceData = useWorldSpace;
             m_XRMeshData.GenerateMesh(gameObject, true, neededPoints);
-            performFullInitialize = true;
         }
-        if (performFullInitialize == false)
-        {
-            return false;
-        }
+
+        // If we have no points, then just assume that stepping through a single point would take us through the whole line
         if (neededPoints == 0)
         {
             m_StepSize = 1.0f;
-            return true;
+            return;
         }
         m_StepSize = 1.0f / Mathf.Max(m_Loop ? m_Positions.Length : m_Positions.Length - 1, 1.0f);
 
@@ -385,7 +374,6 @@ public class XRLineRenderer : MeshChainRenderer
         pointCounter++;
 
         stepPercent += m_StepSize;
-        
 
         // Now do the chain
         while (pointCounter < m_Positions.Length)
@@ -424,7 +412,6 @@ public class XRLineRenderer : MeshChainRenderer
         // Dirty all the VRMeshChain flags so everything gets refreshed
         m_XRMeshData.SetMeshDataDirty(XRMeshChain.MeshRefreshFlag.All);
         m_MeshNeedsRefreshing = true;
-        return true;
     }
 
     protected override bool NeedsReinitialize()

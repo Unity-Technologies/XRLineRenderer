@@ -12,6 +12,8 @@ using UnityEngine;
 [ExecuteInEditMode]
 public class XRTrailRenderer : MeshChainRenderer
 {
+    const float k_AbsoluteMinVertexDistance = 0.01f;
+
     // Stored Trail Data
     [SerializeField]
     [Tooltip("How many points to store for tracing.")]
@@ -56,7 +58,7 @@ public class XRTrailRenderer : MeshChainRenderer
     public float time
     {
         get { return m_Time; }
-        set { m_Time = value; }
+        set { m_Time = Mathf.Max(value, 0); }
     }
 
     /// <summary>
@@ -65,7 +67,7 @@ public class XRTrailRenderer : MeshChainRenderer
     public float minVertexDistance
     {
         get { return m_MinVertexDistance; }
-        set { m_MinVertexDistance = value; }
+        set { m_MinVertexDistance = Mathf.Max(value, k_AbsoluteMinVertexDistance); }
     }
 
     /// <summary>
@@ -109,6 +111,7 @@ public class XRTrailRenderer : MeshChainRenderer
         // Get the current position of the renderer
         var currentPoint = transform.position;
         var pointDistance = (currentPoint - m_LastRecordedPoint).sqrMagnitude;
+        var shrunkThisFrame = false;
 
         // Is it more than minVertexDistance from the last position?
         if (pointDistance > (m_MinVertexDistance*m_MinVertexDistance))
@@ -165,6 +168,7 @@ public class XRTrailRenderer : MeshChainRenderer
                 m_PointIndexStart = (m_PointIndexStart + 1) % m_MaxTrailPoints;
                 m_LastPointTime = m_PointTimes[m_PointIndexStart];
                 positionCount--;
+                shrunkThisFrame = true;
             }
         }
         
@@ -177,9 +181,13 @@ public class XRTrailRenderer : MeshChainRenderer
         {
             m_MeshNeedsRefreshing = false;
             m_MeshRenderer.enabled = false;
+            if (m_Autodestruct && Application.isPlaying && shrunkThisFrame)
+            {
+                Destroy(gameObject);
+            }
         }
 
-        if (m_MeshNeedsRefreshing == true)
+        if (m_MeshNeedsRefreshing)
         {
             m_MeshRenderer.enabled = true;
 
@@ -233,7 +241,7 @@ public class XRTrailRenderer : MeshChainRenderer
                 pointCount++;
                 percent += m_StepSize;
             }
-            lastWidth = m_WidthCurve.Evaluate(1)*m_Width;
+            lastWidth = m_WidthCurve.Evaluate(1) * m_Width;
             m_XRMeshData.SetElementSize((m_PointIndexEnd * 2), lastWidth);
             lastColor = m_Color.Evaluate(1);
             m_XRMeshData.SetElementColor((m_PointIndexEnd * 2), ref lastColor);
@@ -257,29 +265,26 @@ public class XRTrailRenderer : MeshChainRenderer
     public void Clear()
     {
         var zeroVec = Vector3.zero;
-        var zeroColor = new Color(0, 0, 0, 0);
+        var zeroColor = Color.clear;
 
-        if (m_XRMeshData != null)
+        var elementCounter = 0;
+        var pointCounter = 0;
+        while (pointCounter < m_Points.Length)
         {
-            var elementCounter = 0;
-            var pointCounter = 0;
-            while (pointCounter < m_Points.Length)
-            {
-                // Start point
-                m_XRMeshData.SetElementSize(elementCounter, 0);
-                m_XRMeshData.SetElementPosition(elementCounter, ref zeroVec);
-                m_XRMeshData.SetElementColor(elementCounter, ref zeroColor);
-                elementCounter++;
+            // Start point
+            m_XRMeshData.SetElementSize(elementCounter, 0);
+            m_XRMeshData.SetElementPosition(elementCounter, ref zeroVec);
+            m_XRMeshData.SetElementColor(elementCounter, ref zeroColor);
+            elementCounter++;
             
-                // Pipe to the next point
-                m_XRMeshData.SetElementSize(elementCounter, 0);
-                m_XRMeshData.SetElementPipe(elementCounter, ref zeroVec, ref zeroVec);
-                m_XRMeshData.SetElementColor(elementCounter, ref zeroColor);
+            // Pipe to the next point
+            m_XRMeshData.SetElementSize(elementCounter, 0);
+            m_XRMeshData.SetElementPipe(elementCounter, ref zeroVec, ref zeroVec);
+            m_XRMeshData.SetElementColor(elementCounter, ref zeroColor);
 
-                // Go onto the next point while retaining previous values we might need to lerp between
-                elementCounter++;
-                pointCounter++;
-            }
+            // Go onto the next point while retaining previous values we might need to lerp between
+            elementCounter++;
+            pointCounter++;
         }
 
         m_PointIndexStart = 0;
@@ -288,25 +293,17 @@ public class XRTrailRenderer : MeshChainRenderer
         m_LastRecordedPoint = transform.position;
     }
 
-    /// <summary>
-    /// Ensures the mesh data for the renderer is created, and updates it if neccessary
-    /// </summary>
-    /// <param name="force">Whether or not to force a full rebuild of the mesh data</param>
-    /// <returns>True if an initialization occurred, false if it was skipped</returns>
-    protected override bool Initialize(bool force = false)
+    protected override void  Initialize()
     {
-        force = base.Initialize(force);
+        base.Initialize();
 
         m_MaxTrailPoints = Mathf.Max(m_MaxTrailPoints, 3);
 
-        // If we have a point mismatch, we force this operation
+        // If we already have the right amount of points and mesh, then we can get away with just clearing the curve out
         if (m_Points != null && m_MaxTrailPoints == m_Points.Length && m_XRMeshData != null)
         {
-            if (force)
-            {
-                Clear();
-            }
-            return false; 
+            Clear();
+            return;
         }
         
         m_Points = new Vector3[m_MaxTrailPoints];
@@ -329,7 +326,7 @@ public class XRTrailRenderer : MeshChainRenderer
 
             if (neededPoints == 0)
             {
-                return true;
+                return;
             }
             // Dirty all the VRMeshChain flags so everything gets refreshed
             m_MeshRenderer.enabled = false;
@@ -337,8 +334,6 @@ public class XRTrailRenderer : MeshChainRenderer
             m_MeshNeedsRefreshing = true;
         }
         Clear();
-
-        return true;
     }
 
     protected override bool NeedsReinitialize()

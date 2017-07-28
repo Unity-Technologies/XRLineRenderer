@@ -7,6 +7,7 @@ using UnityEngine;
 [RequireComponent(typeof(MeshRenderer))]
 [RequireComponent(typeof(MeshFilter))]
 [ExecuteInEditMode]
+[DisallowMultipleComponent]
 public abstract class MeshChainRenderer : MonoBehaviour
 {
     static readonly GradientColorKey k_DefaultStartColor = new GradientColorKey(Color.white, 0);
@@ -265,7 +266,7 @@ public abstract class MeshChainRenderer : MonoBehaviour
     protected virtual void Awake()
     {
         SetupMeshBackend();
-        Initialize(true);
+        Initialize();
     }
 
     /// <summary>
@@ -274,7 +275,7 @@ public abstract class MeshChainRenderer : MonoBehaviour
     void Reset()
     {
         SetupMeshBackend();
-        Initialize(true);
+        Initialize();
     }
 
     /// <summary>
@@ -343,12 +344,11 @@ public abstract class MeshChainRenderer : MonoBehaviour
     void EditorCheckForUpdate()
     {
         // Because this gets delay-called, it can be referring to a destroyed component when a scene starts
-        if (this == null)
+        if (this != null)
         {
-            return;
+            // If we did not initialize, refresh all the properties instead
+            Initialize();
         }
-        // If we did not initialize, refresh all the properties instead
-        Initialize(true);
     }
 
     /// <summary>
@@ -362,24 +362,15 @@ public abstract class MeshChainRenderer : MonoBehaviour
     protected virtual void UpdateWidth() {}
 
     /// <summary>
-    /// Ensures the mesh data for the renderer is created, and updates it if neccessary
+    /// Creates or updates the underlying mesh data
     /// </summary>
-    /// <param name="force">Whether or not to force a full rebuild of the mesh data</param>
-    /// <returns>True if an initialization occurred, false if it was skipped</returns>
-    protected virtual bool Initialize(bool force = false)
-    {
-        return force;
-    }
+    protected virtual void Initialize() { }
 
     /// <summary>
-    /// Tests if the mesh data for the renderer needs to be created or rebuilt.  Used
-    /// to delay updates if neccessary in the OnValidate function
+    /// Tests if the mesh data needs to be created or rebuilt
     /// </summary>
-    /// <returns></returns>
-    protected virtual bool NeedsReinitialize()
-    {
-        return true;
-    }
+    /// <returns>true if the mesh data needs recreation, false if it is already set up properly</returns>
+    protected virtual bool NeedsReinitialize() { return true; }
 
     /// <summary>
     /// Enables the internal mesh representing the line
