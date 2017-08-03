@@ -171,6 +171,11 @@ public class XRLineRenderer : MeshChainRenderer
             return;
         }
 
+        if (m_Positions.Length <= 0)
+        {
+            return;
+        }
+
         // Otherwise, do fast setting
         var pointCounter = 0;
         var elementCounter = 0;
@@ -242,6 +247,11 @@ public class XRLineRenderer : MeshChainRenderer
             return;
         }
 
+        if (m_Positions.Length <= 0)
+        {
+            return;
+        }
+
         // If it doesn't, go through each point and set the data
         var pointCounter = 0;
         var elementCounter = 0;
@@ -284,6 +294,11 @@ public class XRLineRenderer : MeshChainRenderer
         if (NeedsReinitialize())
         {
             Initialize();
+            return;
+        }
+
+        if (m_Positions.Length <= 0)
+        {
             return;
         }
 
