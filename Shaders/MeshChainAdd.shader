@@ -1,4 +1,4 @@
-Shader "VRLineRenderer/MeshChain - Additive"
+Shader "XRLineRenderer/MeshChain - Additive"
 {
     Properties 
     {

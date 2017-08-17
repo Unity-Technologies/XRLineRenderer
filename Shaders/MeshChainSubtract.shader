@@ -1,4 +1,4 @@
-Shader "VRLineRenderer/MeshChain - Subtractive"
+Shader "XRLineRenderer/MeshChain - Subtractive"
 {
     Properties 
     {

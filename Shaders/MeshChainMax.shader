@@ -1,4 +1,4 @@
-Shader "VRLineRenderer/MeshChain - Max Color"
+Shader "XRLineRenderer/MeshChain - Max Color"
 {
     Properties 
     {

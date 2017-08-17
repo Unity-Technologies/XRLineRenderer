@@ -1,4 +1,4 @@
-Shader "VRLineRenderer/MeshChain - Min Color"
+Shader "XRLineRenderer/MeshChain - Min Color"
 {
     Properties 
     {

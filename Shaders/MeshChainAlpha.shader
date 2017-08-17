@@ -1,4 +1,4 @@
-Shader "VRLineRenderer/MeshChain - Alpha Blended"
+Shader "XRLineRenderer/MeshChain - Alpha Blended"
 {
     Properties 
     {
