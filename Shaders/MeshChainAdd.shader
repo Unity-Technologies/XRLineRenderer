@@ -1,4 +1,4 @@
-Shader "VRLineRenderer/MeshChain - Additive"
+Shader "XRLineRenderer/MeshChain - Additive"
 {
     Properties 
     {
@@ -53,7 +53,7 @@ Shader "VRLineRenderer/MeshChain - Additive"
             // prevent overlapping lines from adding too much color,
             // we set the alpha value to one after visiting a pixel.
             Blend OneMinusDstAlpha One, One One
-            BlendOp Add
+            BlendOp Add, Max
             Cull Off
             Lighting Off
             ZWrite Off
