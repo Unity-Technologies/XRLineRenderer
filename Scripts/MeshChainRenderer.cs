@@ -245,7 +245,7 @@ public abstract class MeshChainRenderer : MonoBehaviour
         var meshFilter = GetComponent<MeshFilter>();
         meshFilter.hideFlags = HideFlags.HideInInspector;
 
-        if (m_Materials == null)
+        if (m_Materials == null || m_Materials.Length == 0)
         {
             m_Materials = m_MeshRenderer.sharedMaterials;
         }
