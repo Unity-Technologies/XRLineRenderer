@@ -137,12 +137,11 @@ namespace UnityEditor
                     }
                 }
                 var newRadiusScale = EditorGUILayout.FloatField(Styles.lineRadiusScaleText, radiusSettings.x);
-                var newRadiusMin = radiusSettings.y;
+                var newRadiusMin = Mathf.Max(EditorGUILayout.FloatField(Styles.lineRadiusMinText, radiusSettings.y), 0.0f);
                 var newRadiusMax = radiusSettings.z;
 
                 if (depthScaleMode == false)
                 {
-                    newRadiusMin = Mathf.Max(EditorGUILayout.FloatField(Styles.lineRadiusMinText, radiusSettings.y), 0.0f);
                     newRadiusMax = Mathf.Max(EditorGUILayout.FloatField(Styles.lineRadiusMaxText, radiusSettings.z), newRadiusMin);
                 }
 

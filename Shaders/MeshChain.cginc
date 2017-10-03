@@ -55,8 +55,8 @@
             half expandDistanceSource = clamp(_lineRadius.x * o.pos.w * .1, _lineRadius.y, _lineRadius.z) * v.texcoord.z;
             half expandDistanceDest = clamp(_lineRadius.x * neighborPos.w * .1, _lineRadius.y, _lineRadius.z) * v.texcoord.w;
         #else
-            half expandDistanceSource = _lineRadius * .1 * v.texcoord.z;
-            half expandDistanceDest = _lineRadius * .1 * v.texcoord.w;
+            half expandDistanceSource = max(_lineRadius * .1, _lineRadius.y) * v.texcoord.z;
+            half expandDistanceDest = max(_lineRadius * .1, _lineRadius.y) * v.texcoord.w;
         #endif
 
         // If the screen space distance between these two points is under a threshold, we are a billboard
