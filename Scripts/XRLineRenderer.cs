@@ -29,7 +29,12 @@ public class XRLineRenderer : MeshChainRenderer
     public bool loop
     {
         get { return m_Loop; }
-        set { m_Loop = value; }
+        set
+        {
+            m_Loop = value;
+            if (NeedsReinitialize())
+                Initialize();
+        }
     }
 
     /// <summary>
