@@ -25,7 +25,13 @@ public class XRLineRenderer : MeshChainRenderer
     [SerializeField]
     [Tooltip("Connect the first and last vertices, to create a loop.")]
     bool m_Loop;
-    
+
+    public bool loop
+    {
+        get { return m_Loop; }
+        set { m_Loop = value; }
+    }
+
     /// <summary>
     /// Draw lines in worldspace (or local space)
     /// </summary>
