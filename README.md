@@ -1,15 +1,24 @@
+# NOTE
+This is a work-in-progress branch, focusing on two goals: 
+1. Converting the XRLineRenderer to ECS
+2. Seeing how aggressively mesh rendering can be optimized currently and the challenges of mixing graphics + ECS
+
+This branch is very early on and does not yet function.
+
 # XR Line Renderer
 An XR-Optimized line renderer that is also capable of producing very inexpensive glow effects.  The XRLineRenderer mimics rendering with 3d capsules while only using two quads worth of geometry.
 
 ## Setup and usage
 
-1. Place the XRLineRenderer folder into Assets\XR Utilities\XRLineRenderer in your project.
+1. Get setup with the ECS build of Unity (see here: https://forum.unity.com/threads/welcome.522627/#post-3432634 for details)
 
-2. Add a XRLineRenderer or XRTrailRenderer component to your gameobject.  The interface is nearly identical to the built in Unity Line and Trail Renderers.
+2. Place the XRLineRenderer folder into Assets\XR Utilities\XRLineRenderer in your project.
 
-3. Create a new material using the XRLineRenderer shaders.  You can find some examples in XRLineRenderer\Materials
+3. Add a XRLineRenderer or XRTrailRenderer component to your gameobject.  The interface is nearly identical to the built in Unity Line and Trail Renderers.
 
-4. Apply this material to the mesh renderer of your XRLineRenderer or XRTrailRenderer.
+4. Create a new material using the XRLineRenderer shaders.  You can find some examples in XRLineRenderer\Materials
+
+5. Apply this material to the mesh renderer of your XRLineRenderer or XRTrailRenderer.
 
 
 ## VRLineRenderer Shader
