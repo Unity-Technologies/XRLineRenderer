@@ -1,0 +1,10 @@
+{
+    "name": "VRLR-Editor",
+    "references": [
+        "VRLR"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": []
+}
