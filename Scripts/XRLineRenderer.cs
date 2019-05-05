@@ -243,7 +243,7 @@ public class XRLineRenderer : MeshChainRenderer
     
     /// <summary>
     /// Get the number of billboard-line chains.
-    /// <summary
+    /// <summary>
     public int GetVertexCount()
     {
         return m_Positions.Length;
