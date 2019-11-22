@@ -1,0 +1,6 @@
+﻿{
+    "name": "Tests.xrlinerenderer_Tests",
+    "optionalUnityReferences": [
+        "TestAssemblies"
+    ]
+}
