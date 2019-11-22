@@ -4,7 +4,7 @@
 	"version": "0.1.0-preview",
 	"unity": "2019.1",
 	"unityRelease": "14f1",
-	"description": "An XR Optimized line renderer that is also capable of producing very inexpensive glow effects. The XRLineRenderer mimics rendering with 3d capsules while only using two quads worth of geometry.",
+	"description": "An XR-Optimized line renderer that is also capable of producing very inexpensive glow effects. The XRLineRenderer mimics rendering with 3d capsules while only using two quads worth of geometry.",
 	"dependencies": {
 	}
 }
