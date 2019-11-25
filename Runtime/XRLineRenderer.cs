@@ -4,7 +4,7 @@ using UnityEngine.Serialization;
 /// <summary>
 /// An XR-Focused drop-in replacement for the Line Renderer
 /// This renderer draws fixed-width lines with simulated volume and glow.
-/// This has many of the advantages of the traditional Line Renderer, old-school system-level line rendering functions, 
+/// This has many of the advantages of the traditional Line Renderer, old-school system-level line rendering functions,
 /// and volumetric (a linked series of capsules or cubes) rendering
 /// </summary>
 [RequireComponent(typeof(MeshRenderer))]
@@ -40,12 +40,16 @@ public class XRLineRenderer : MeshChainRenderer
     /// <summary>
     /// Draw lines in worldspace (or local space)
     /// </summary>
-    public bool useWorldSpace { get { return m_UseWorldSpace; } }
+    public bool useWorldSpace
+    {
+        get { return m_UseWorldSpace; }
+        set { m_UseWorldSpace = value; }
+    }
 
     public override Material material
     {
         get { return m_MeshRenderer.material; }
-        set 
+        set
         {
             m_MeshRenderer.material = value;
             CopyWorldSpaceDataFromMaterial();
@@ -240,7 +244,7 @@ public class XRLineRenderer : MeshChainRenderer
         // Do an initialization, this changes everything
         Initialize();
     }
-    
+
     /// <summary>
     /// Get the number of billboard-line chains.
     /// <summary>
@@ -317,7 +321,7 @@ public class XRLineRenderer : MeshChainRenderer
         var pointCounter = 0;
         var elementCounter = 0;
         var stepPercent = 0.0f;
-        
+
         // We go through the element list, much like initialization, but only update the width part of the variables
         var lastWidth = m_WidthCurve.Evaluate(stepPercent) * m_Width;
         m_XRMeshData.SetElementSize(elementCounter, lastWidth);
@@ -366,7 +370,7 @@ public class XRLineRenderer : MeshChainRenderer
         // If we're looping, then we do need one more pipe
         var neededPoints = m_Loop ? 1 : 0;
         neededPoints = Mathf.Max(neededPoints + (m_Positions.Length * 2) - 1, 0);
- 
+
         if (m_XRMeshData == null)
         {
             m_XRMeshData = new XRMeshChain();
