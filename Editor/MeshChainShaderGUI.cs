@@ -1,6 +1,7 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
 
-namespace UnityEditor
+namespace Unity.Labs.XRLineRenderer
 {
     public class MeshChainShaderGUI : ShaderGUI
     {

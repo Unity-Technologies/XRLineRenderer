@@ -1,7 +1,7 @@
 {
     "name": "Unity.Labs.XRLineRenderer.Editor",
     "references": [
-        "GUID:507fb7fe0a2794ac481eab674e8b99cf"
+        "Unity.Labs.XRLineRenderer"
     ],
     "includePlatforms": [
         "Editor"
