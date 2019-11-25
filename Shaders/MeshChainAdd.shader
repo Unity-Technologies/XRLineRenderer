@@ -1,6 +1,6 @@
 Shader "XRLineRenderer/MeshChain - Additive"
 {
-    Properties 
+    Properties
     {
         _Color("Color Tint", COLOR) = (1,1,1,1)
         _lineSettings ("Line Thickness Settings", VECTOR) = (0, 1, .5, 1)
@@ -24,7 +24,7 @@ Shader "XRLineRenderer/MeshChain - Additive"
         Pass
         {
             // In the first pass we write only to the alpha channel.
-            // This lets us punch a hole in the background that our 
+            // This lets us punch a hole in the background that our
             // line color then shows through
             Blend One One
             BlendOp Min
@@ -73,5 +73,5 @@ Shader "XRLineRenderer/MeshChain - Additive"
         }
     }
     FallBack "Diffuse"
-    CustomEditor "MeshChainShaderGUI"
+    CustomEditor "Unity.Labs.XRLineRenderer.MeshChainShaderGUI"
 }

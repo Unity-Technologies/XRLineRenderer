@@ -1,0 +1,17 @@
+{
+    "name": "Unity.Labs.XRLineRenderer.Editor",
+    "references": [
+        "Unity.Labs.XRLineRenderer"
+    ],
+    "includePlatforms": [
+        "Editor"
+    ],
+    "excludePlatforms": [],
+    "allowUnsafeCode": false,
+    "overrideReferences": false,
+    "precompiledReferences": [],
+    "autoReferenced": true,
+    "defineConstraints": [],
+    "versionDefines": [],
+    "noEngineReferences": false
+}

@@ -1,12 +1,12 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
 
-namespace UnityEditor
+namespace Unity.Labs.XR
 {
-    public class MeshChainShaderGUI : ShaderGUI
+    class MeshChainShaderGUI : ShaderGUI
     {
-        protected static class Styles
+        static class Styles
         {
-            public static string emptyTootip = "";
             public static GUIContent colorText = new GUIContent("Line Tint", "Line Color (RGB) and Transparency (A)");
             public static GUIContent lineDataSpaceText = new GUIContent("World Space Data", "If true, the data " +
                 "will not be transformed before rendering");
@@ -40,9 +40,9 @@ namespace UnityEditor
         MaterialProperty m_LineDataSpace;
         MaterialProperty m_LineDepthScaleMode;
 
-        public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] props)
+        public override void OnGUI(MaterialEditor materialEditor, MaterialProperty[] properties)
         {
-            FindProperties(props); // MaterialProperties can be animated so we do not cache them but fetch them every event to ensure animated values are updated correctly
+            FindProperties(properties); // MaterialProperties can be animated so we do not cache them but fetch them every event to ensure animated values are updated correctly
             m_MaterialEditor = materialEditor;
             Material material = materialEditor.target as Material;
 
@@ -56,7 +56,7 @@ namespace UnityEditor
             }
         }
 
-        public void FindProperties(MaterialProperty[] props)
+        void FindProperties(MaterialProperty[] props)
         {
             m_LineColor = FindProperty("_Color", props);
             m_LineSettings = FindProperty("_lineSettings", props);
@@ -67,7 +67,7 @@ namespace UnityEditor
             m_LineDepthScaleMode = FindProperty("_LineDepthScale", props, false);
         }
 
-        public void ShaderPropertiesGUI(Material material)
+        void ShaderPropertiesGUI(Material material)
         {
             // Use default labelWidth
             EditorGUIUtility.labelWidth = 0f;
