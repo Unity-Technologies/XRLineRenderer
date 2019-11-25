@@ -28,6 +28,9 @@ namespace Unity.Labs.XRLineRenderer
         [Tooltip("Connect the first and last vertices, to create a loop.")]
         bool m_Loop;
 
+        /// <summary>
+        /// Connect the first and last vertices, to create a loop.
+        /// </summary>
         public bool loop
         {
             get { return m_Loop; }
@@ -48,6 +51,9 @@ namespace Unity.Labs.XRLineRenderer
             set { m_UseWorldSpace = value; }
         }
 
+        /// <summary>
+        /// Returns the first instantiated Material assigned to the renderer.
+        /// </summary>
         public override Material material
         {
             get { return m_MeshRenderer.material; }
@@ -58,6 +64,9 @@ namespace Unity.Labs.XRLineRenderer
             }
         }
 
+        /// <summary>
+        /// Returns all the instantiated materials of this object.
+        /// </summary>
         public override Material[] materials
         {
             get { return m_MeshRenderer.materials; }
@@ -68,6 +77,9 @@ namespace Unity.Labs.XRLineRenderer
             }
         }
 
+        /// <summary>
+        /// Returns the shared material of this object.
+        /// </summary>
         public override Material sharedMaterial
         {
             get { return m_MeshRenderer.sharedMaterial; }
@@ -78,6 +90,9 @@ namespace Unity.Labs.XRLineRenderer
             }
         }
 
+        /// <summary>
+        /// Returns all shared materials of this object.
+        /// </summary>
         public override Material[] SharedMaterials
         {
             get { return m_MeshRenderer.materials; }
@@ -255,12 +270,16 @@ namespace Unity.Labs.XRLineRenderer
 
         /// <summary>
         /// Get the number of billboard-line chains.
-        /// <summary>
+        /// </summary>
+        /// <returns>The number of chains</returns>
         public int GetVertexCount()
         {
             return m_Positions.Length;
         }
 
+        /// <summary>
+        /// Updates any internal variables to represent the new color that has been applied
+        /// </summary>
         protected override void UpdateColors()
         {
             // See if the data needs initializing
@@ -311,6 +330,9 @@ namespace Unity.Labs.XRLineRenderer
             m_MeshNeedsRefreshing = true;
         }
 
+        /// <summary>
+        /// Updates any internal variables to represent the new width that has been applied
+        /// </summary>
         protected override void UpdateWidth()
         {
             // See if the data needs initializing
@@ -362,6 +384,9 @@ namespace Unity.Labs.XRLineRenderer
             m_MeshNeedsRefreshing = true;
         }
 
+        /// <summary>
+        /// Creates or updates the underlying mesh data
+        /// </summary>
         protected override void Initialize()
         {
             base.Initialize();
@@ -454,9 +479,13 @@ namespace Unity.Labs.XRLineRenderer
             m_MeshNeedsRefreshing = true;
         }
 
+        /// <summary>
+        /// Tests if the mesh data needs to be created or rebuilt
+        /// </summary>
+        /// <returns>true if the mesh data needs recreation, false if it is already set up properly</returns>
         protected override bool NeedsReinitialize()
         {
-            // No mesh data means we definately need to reinitialize
+            // No mesh data means we definitely need to reinitialize
             if (m_XRMeshData == null)
             {
                 return true;

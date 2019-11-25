@@ -5,7 +5,7 @@ namespace Unity.Labs.XRLineRenderer
 {
     [CustomEditor(typeof(XRTrailRenderer))]
     [CanEditMultipleObjects]
-    public class XRTrailRendererEditor : Editor
+    class XRTrailRendererEditor : Editor
     {
         SerializedProperty m_Materials;
         SerializedProperty m_Time;

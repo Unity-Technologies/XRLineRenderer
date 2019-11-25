@@ -11,13 +11,35 @@ namespace Unity.Labs.XRLineRenderer
     /// </summary>
     public class XRMeshChain
     {
+        /// <summary>
+        /// What part of the mesh to refresh
+        /// </summary>
         [System.Flags]
         public enum MeshRefreshFlag
         {
+            /// <summary>
+            /// Don't refresh any of the mesh
+            /// </summary>
             None = 0,
+
+            /// <summary>
+            /// Refresh positions
+            /// </summary>
             Positions = 1,
+
+            /// <summary>
+            /// Refresh colors
+            /// </summary>
             Colors = 2,
+
+            /// <summary>
+            /// Refresh sizes
+            /// </summary>
             Sizes = 4,
+
+            /// <summary>
+            /// Refresh all mesh components
+            /// </summary>
             All = 7
         }
 
@@ -26,7 +48,7 @@ namespace Unity.Labs.XRLineRenderer
         List<Vector4> m_ShapeData; // xy: UV coordinates for GPU expansion zw: Size of this vertex, size of the neighbor
         List<Vector3> m_NeighborPoints; // Location of the next point this pipe connects to, or itself if it is a billboard
 
-        // Update flags to prevent unncessary mesh data generation
+        // Update flags to prevent unnecessary mesh data generation
         MeshRefreshFlag m_DataThatNeedsUpdate = MeshRefreshFlag.All;
 
         // Cached runtime data
@@ -55,6 +77,9 @@ namespace Unity.Labs.XRLineRenderer
         /// </summary>
         public bool centerAtRoot { get; set; }
 
+        /// <summary>
+        /// Initialize a new XRMeshChain
+        /// </summary>
         public XRMeshChain()
         {
             reservedElements = 0;
@@ -249,7 +274,8 @@ namespace Unity.Labs.XRLineRenderer
         /// Sets the size of the pipe being rendered
         /// </summary>
         /// <param name="elementIndex">The index of the pipe control point to update</param>
-        /// <param name="sizeModification">What the width of the pipe should be</param>
+        /// <param name="startSize">The start size of the pipe</param>
+        /// <param name="endSize">The end size of the pipe</param>
         public void SetElementSize(int elementIndex, float startSize, float endSize)
         {
             var offset = elementIndex * 4;

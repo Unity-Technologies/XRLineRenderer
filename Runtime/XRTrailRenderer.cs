@@ -299,6 +299,9 @@ namespace Unity.Labs.XRLineRenderer
             m_LastRecordedPoint = transform.position;
         }
 
+        /// <summary>
+        /// Creates or updates the underlying mesh data
+        /// </summary>
         protected override void Initialize()
         {
             base.Initialize();
@@ -345,15 +348,19 @@ namespace Unity.Labs.XRLineRenderer
             Clear();
         }
 
+        /// <summary>
+        /// Tests if the mesh data needs to be created or rebuilt
+        /// </summary>
+        /// <returns>true if the mesh data needs recreation, false if it is already set up properly</returns>
         protected override bool NeedsReinitialize()
         {
-            // No mesh data means we definately need to reinitialize
+            // No mesh data means we definitely need to reinitialize
             if (m_XRMeshData == null)
             {
                 return true;
             }
 
-            // Mismatched point data means we definately need to reinitialize
+            // Mismatched point data means we definitely need to reinitialize
             if (m_Points == null || m_MaxTrailPoints != m_Points.Length)
             {
                 return true;

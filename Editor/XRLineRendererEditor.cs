@@ -5,7 +5,7 @@ namespace Unity.Labs.XRLineRenderer
 {
     [CustomEditor(typeof(XRLineRenderer))]
     [CanEditMultipleObjects]
-    public class XRLineRendererEditor : Editor
+    class XRLineRendererEditor : Editor
     {
         SerializedProperty m_Materials;
         SerializedProperty m_Positions;

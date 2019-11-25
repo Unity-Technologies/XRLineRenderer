@@ -17,29 +17,54 @@ namespace Unity.Labs.XRLineRenderer
         static readonly GradientAlphaKey k_DefaultStartAlpha = new GradientAlphaKey(1, 0);
         static readonly GradientAlphaKey k_DefaultEndAlpha = new GradientAlphaKey(1, 1);
 
+        /// <summary>
+        /// Materials to use when rendering.
+        /// </summary>
         [SerializeField]
         [Tooltip("Materials to use when rendering.")]
         protected Material[] m_Materials;
 
+        /// <summary>
+        /// The multiplier applied to the curve, describing the width (in world space) along the line.
+        /// </summary>
         [SerializeField]
         [Tooltip("The multiplier applied to the curve, describing the width (in world space) along the line.")]
         protected float m_Width = 1.0f;
 
+        /// <summary>
+        /// The curve describing the width of the line at various points along its length.
+        /// </summary>
         [SerializeField]
         [Tooltip("The curve describing the width of the line at various points along its length.")]
         protected AnimationCurve m_WidthCurve = new AnimationCurve();
 
+        /// <summary>
+        /// The gradient describing color along the line.
+        /// </summary>
         [SerializeField]
         [Tooltip("The gradient describing color along the line.")]
         protected Gradient m_Color = new Gradient();
 
+        /// <summary>
+        /// The MeshRenderer used to render the line
+        /// </summary>
         [SerializeField]
         [HideInInspector]
         protected MeshRenderer m_MeshRenderer;
 
-        // Cached Data
+        /// <summary>
+        /// Cached mesh data
+        /// </summary>
         protected XRMeshChain m_XRMeshData;
+
+        /// <summary>
+        /// Whether the mesh data needs to be refreshed
+        /// </summary>
         protected bool m_MeshNeedsRefreshing;
+
+        /// <summary>
+        /// The step size
+        /// </summary>
         protected float m_StepSize = 1.0f;
 
         /// <summary>
@@ -346,9 +371,11 @@ namespace Unity.Labs.XRLineRenderer
         /// <summary>
         /// Allows the component to be referenced as a renderer, forwarding the MeshRenderer ahead
         /// </summary>
-        public static implicit operator Renderer(MeshChainRenderer lr)
+        /// <param name="meshChainRenderer"></param>
+        /// <returns>The MeshChainRenderer's MeshRenderer</returns>
+        public static implicit operator Renderer(MeshChainRenderer meshChainRenderer)
         {
-            return lr.m_MeshRenderer;
+            return meshChainRenderer.m_MeshRenderer;
         }
 
 

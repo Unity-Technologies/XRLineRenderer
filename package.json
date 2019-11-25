@@ -1,6 +1,6 @@
 {
   "name": "com.unity.labs.xrlinerenderer",
-  "displayName": "XRLineRenderer",
+  "displayName": "XR Line Renderer",
   "version": "0.1.0-preview",
   "unity": "2019.1",
   "unityRelease": "14f1",

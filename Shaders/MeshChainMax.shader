@@ -1,6 +1,6 @@
 Shader "XRLineRenderer/MeshChain - Max Color"
 {
-    Properties 
+    Properties
     {
         _Color("Color Tint", COLOR) = (1,1,1,1)
         _lineSettings ("Line Thickness Settings", VECTOR) = (0, 1, .5, 1)
@@ -43,5 +43,5 @@ Shader "XRLineRenderer/MeshChain - Max Color"
         }
     }
     FallBack "Diffuse"
-    CustomEditor "MeshChainShaderGUI"
+    CustomEditor "Unity.Labs.XRLineRenderer.MeshChainShaderGUI"
 }
