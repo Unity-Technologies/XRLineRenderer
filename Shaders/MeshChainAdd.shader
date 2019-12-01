@@ -73,5 +73,5 @@ Shader "XRLineRenderer/MeshChain - Additive"
         }
     }
     FallBack "Diffuse"
-    CustomEditor "Unity.Labs.XRLineRenderer.MeshChainShaderGUI"
+    CustomEditor "Unity.Labs.XR.MeshChainShaderGUI"
 }
