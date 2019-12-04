@@ -302,9 +302,9 @@ namespace Unity.Labs.XR
         /// <summary>
         /// Creates or updates the underlying mesh data
         /// </summary>
-        protected override void Initialize()
+        protected override void Initialize(bool setMesh = true)
         {
-            base.Initialize();
+            base.Initialize(setMesh);
 
             m_MaxTrailPoints = Mathf.Max(m_MaxTrailPoints, 3);
 
@@ -332,7 +332,7 @@ namespace Unity.Labs.XR
             {
                 m_XRMeshData.worldSpaceData = true;
                 m_XRMeshData.centerAtRoot = true;
-                m_XRMeshData.GenerateMesh(gameObject, true, neededPoints);
+                m_XRMeshData.GenerateMesh(gameObject, true, neededPoints, setMesh);
 
                 if (neededPoints == 0)
                 {

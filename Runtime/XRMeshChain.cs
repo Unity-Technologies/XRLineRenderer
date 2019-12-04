@@ -91,7 +91,7 @@ namespace Unity.Labs.XR
         /// <param name="owner">The gameobject that will own the created mesh</param>
         /// <param name="dynamic">Whether this mesh is going to updated frequently or not</param>
         /// <param name="totalElements">How many total billboards and pipes are needed for this renderer</param>
-        public void GenerateMesh(GameObject owner, bool dynamic, int totalElements)
+        public void GenerateMesh(GameObject owner, bool dynamic, int totalElements, bool setMesh = true)
         {
             // Precache neccessary data
             // The mesh, vertex and triangle counts
@@ -105,7 +105,9 @@ namespace Unity.Labs.XR
                 m_Mesh.MarkDynamic();
             }
 
-            owner.GetComponent<MeshFilter>().mesh = m_Mesh;
+            if (setMesh)
+                owner.GetComponent<MeshFilter>().mesh = m_Mesh;
+
             m_OwnerTransform = owner.transform;
 
             reservedElements = totalElements;

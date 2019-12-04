@@ -387,13 +387,14 @@ namespace Unity.Labs.XR
         /// <summary>
         /// Creates or updates the underlying mesh data
         /// </summary>
-        protected override void Initialize()
+        protected override void Initialize(bool setMesh = true)
         {
             base.Initialize();
             CopyWorldSpaceDataFromMaterial();
 
             if (m_Positions == null)
             {
+                Debug.Log("newpos");
                 m_Positions = new Vector3[0];
             }
 
@@ -412,7 +413,7 @@ namespace Unity.Labs.XR
             if (m_XRMeshData.reservedElements != neededPoints)
             {
                 m_XRMeshData.worldSpaceData = useWorldSpace;
-                m_XRMeshData.GenerateMesh(gameObject, true, neededPoints);
+                m_XRMeshData.GenerateMesh(gameObject, true, neededPoints, setMesh);
             }
 
             // If we have no points, then just assume that stepping through a single point would take us through the whole line

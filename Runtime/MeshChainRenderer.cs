@@ -269,34 +269,57 @@ namespace Unity.Labs.XR
         }
 
         /// <summary>
-        /// Cleans up the visible interface of the meshrenderer by hiding unneeded components
-        /// Also makes sure the animation curves are set up properly to defualts
+        /// Cleans up the visible interface of the MeshRenderer by hiding unneeded components
+        /// Also makes sure the animation curves are set up properly to defaults
         /// </summary>
         void SetupMeshBackend()
         {
-            m_MeshRenderer = GetComponent<MeshRenderer>();
-            m_MeshRenderer.hideFlags = HideFlags.HideInInspector;
+            if (m_MeshRenderer == null)
+                m_MeshRenderer = GetComponent<MeshRenderer>();
+
+            if (m_MeshRenderer.hideFlags == HideFlags.None)
+                m_MeshRenderer.hideFlags = HideFlags.HideInInspector;
+
             var meshFilter = GetComponent<MeshFilter>();
-            meshFilter.hideFlags = HideFlags.HideInInspector;
+            if (meshFilter.hideFlags == HideFlags.None)
+                meshFilter.hideFlags = HideFlags.HideInInspector;
 
             if (m_Materials == null || m_Materials.Length == 0)
             {
                 m_Materials = m_MeshRenderer.sharedMaterials;
             }
 
-            m_MeshRenderer.sharedMaterials = m_Materials;
+            var sharedMaterials = m_MeshRenderer.sharedMaterials;
+            var length = sharedMaterials.Length;
+            var materialsEqual = true;
+            for (var i = 0; i < length; i++)
+            {
+                if (sharedMaterials[i] != m_Materials[i])
+                {
+                    materialsEqual = false;
+                    break;
+                }
+            }
+
+            if (!materialsEqual)
+            {
+                m_MeshRenderer.sharedMaterials = m_Materials;
+            }
 
             if (m_WidthCurve == null || m_WidthCurve.keys == null || m_WidthCurve.keys.Length == 0)
             {
                 m_WidthCurve = new AnimationCurve(new Keyframe(0, 1.0f));
             }
 
-            m_Color = m_Color ?? new Gradient
+            if (m_Color == null)
             {
-                alphaKeys = new[] { k_DefaultStartAlpha, k_DefaultEndAlpha },
-                colorKeys = new[] { k_DefaultStartColor, k_DefaultEndColor },
-                mode = GradientMode.Blend
-            };
+                m_Color = new Gradient
+                {
+                    alphaKeys = new[] { k_DefaultStartAlpha, k_DefaultEndAlpha },
+                    colorKeys = new[] { k_DefaultStartColor, k_DefaultEndColor },
+                    mode = GradientMode.Blend
+                };
+            }
         }
 
         /// <summary>
@@ -389,7 +412,7 @@ namespace Unity.Labs.XR
             if (this != null)
             {
                 // If we did not initialize, refresh all the properties instead
-                Initialize();
+                Initialize(false);
             }
         }
 
@@ -406,7 +429,7 @@ namespace Unity.Labs.XR
         /// <summary>
         /// Creates or updates the underlying mesh data
         /// </summary>
-        protected virtual void Initialize() { }
+        protected virtual void Initialize(bool generate = true) { }
 
         /// <summary>
         /// Tests if the mesh data needs to be created or rebuilt
