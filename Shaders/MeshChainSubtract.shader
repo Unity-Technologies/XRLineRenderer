@@ -23,7 +23,31 @@ Shader "XRLineRenderer/MeshChain - Subtractive"
         // To alpha blend with the background, we use a two-pass technique
         Pass
         {
-            // In the first pass we write only to the alpha channel.
+            // In the first pass we 'clear' the alpha channel to 1, 
+            // so that the inner segments can mask this out
+            Blend One One
+            BlendOp Max
+            Cull Off
+            Lighting Off
+            ZWrite Off
+            ColorMask A
+            Offset 0, -.1
+
+            CGPROGRAM
+
+                #pragma vertex vert
+                #pragma fragment fragColor
+                #pragma multi_compile LINE_PERSPECTIVE_WIDTH LINE_FIXED_WIDTH
+                #pragma multi_compile LINE_MODEL_SPACE LINE_WORLD_SPACE
+
+                #include "UnityCG.cginc"
+                #include "MeshChain.cginc"
+
+            ENDCG
+        }
+        Pass
+        {
+            // Next we write the line shape and fade only to the alpha channel.
             // This lets us punch a hole in the background that our
             // line color then shows through
             Blend One One
