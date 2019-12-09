@@ -111,8 +111,11 @@ namespace Unity.Labs.XR
             get { return m_WidthCurve.Evaluate(0) * m_Width; }
             set
             {
+                if (m_Width == 0 || float.IsNaN(m_Width))
+                    return;
+
                 var keys = m_WidthCurve.keys;
-                keys[0].value = value;
+                keys[0].value = value / m_Width;
                 m_WidthCurve.keys = keys;
                 UpdateWidth();
             }
@@ -126,9 +129,12 @@ namespace Unity.Labs.XR
             get { return m_WidthCurve.Evaluate(1) * m_Width; }
             set
             {
+                if (m_Width == 0 || float.IsNaN(m_Width))
+                    return;
+
                 var keys = m_WidthCurve.keys;
                 var lastIndex = keys.Length - 1;
-                keys[lastIndex].value = value;
+                keys[lastIndex].value = value / m_Width;
                 m_WidthCurve.keys = keys;
                 UpdateWidth();
             }
