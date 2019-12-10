@@ -393,10 +393,7 @@ namespace Unity.Labs.XR
             CopyWorldSpaceDataFromMaterial();
 
             if (m_Positions == null)
-            {
-                Debug.Log("newpos");
                 m_Positions = new Vector3[0];
-            }
 
             // For a line renderer we assume one big chain
             // We need a control point for each billboard and a control point for each pipe connecting them together
