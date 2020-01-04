@@ -1,6 +1,6 @@
 Shader "XRLineRenderer/MeshChain - Subtractive"
 {
-    Properties 
+    Properties
     {
         _Color("Color Tint", COLOR) = (1,1,1,1)
         _lineSettings ("Line Thickness Settings", VECTOR) = (0, 1, .5, 1)
@@ -23,8 +23,32 @@ Shader "XRLineRenderer/MeshChain - Subtractive"
         // To alpha blend with the background, we use a two-pass technique
         Pass
         {
-            // In the first pass we write only to the alpha channel.
-            // This lets us punch a hole in the background that our 
+            // In the first pass we 'clear' the alpha channel to 1, 
+            // so that the inner segments can mask this out
+            Blend One One
+            BlendOp Max
+            Cull Off
+            Lighting Off
+            ZWrite Off
+            ColorMask A
+            Offset 0, -.1
+
+            CGPROGRAM
+
+                #pragma vertex vert
+                #pragma fragment fragColor
+                #pragma multi_compile LINE_PERSPECTIVE_WIDTH LINE_FIXED_WIDTH
+                #pragma multi_compile LINE_MODEL_SPACE LINE_WORLD_SPACE
+
+                #include "UnityCG.cginc"
+                #include "MeshChain.cginc"
+
+            ENDCG
+        }
+        Pass
+        {
+            // Next we write the line shape and fade only to the alpha channel.
+            // This lets us punch a hole in the background that our
             // line color then shows through
             Blend One One
             BlendOp Min
@@ -73,5 +97,5 @@ Shader "XRLineRenderer/MeshChain - Subtractive"
         }
     }
     FallBack "Diffuse"
-    CustomEditor "MeshChainShaderGUI"
+    CustomEditor "Unity.Labs.XR.MeshChainShaderGUI"
 }

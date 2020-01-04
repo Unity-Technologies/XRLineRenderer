@@ -1,10 +1,11 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
 
-namespace UnityEditor
+namespace Unity.Labs.XR
 {
     [CustomEditor(typeof(XRTrailRenderer))]
     [CanEditMultipleObjects]
-    public class XRTrailRendererEditor : Editor
+    class XRTrailRendererEditor : Editor
     {
         SerializedProperty m_Materials;
         SerializedProperty m_Time;

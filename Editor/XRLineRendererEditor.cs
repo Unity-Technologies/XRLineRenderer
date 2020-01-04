@@ -1,10 +1,11 @@
-﻿using UnityEngine;
+﻿using UnityEditor;
+using UnityEngine;
 
-namespace UnityEditor
+namespace Unity.Labs.XR
 {
     [CustomEditor(typeof(XRLineRenderer))]
     [CanEditMultipleObjects]
-    public class XRLineRendererEditor : Editor
+    class XRLineRendererEditor : Editor
     {
         SerializedProperty m_Materials;
         SerializedProperty m_Positions;
@@ -35,7 +36,7 @@ namespace UnityEditor
             {
                 EditorGUILayout.PropertyField(m_UseWorldSpace, true);
             }
-            
+
             EditorGUILayout.PropertyField(m_Loop, true);
             EditorGUILayout.PropertyField(m_Width, true);
             EditorGUILayout.CurveField(m_WidthCurve, Color.red, new Rect(0, 0, 1, 1));
