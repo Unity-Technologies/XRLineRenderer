@@ -6,11 +6,11 @@ using UnityEngine.TestTools;
 
 namespace Tests
 {
-    public class xrlinrendererTests
+    public class XRLineRendererTests
     {
         // A Test behaves as an ordinary method
         [Test]
-        public void xrlinrendererTestsSimplePasses()
+        public void XRLineRendererTestsSimplePasses()
         {
             // Use the Assert class to test conditions
         }
@@ -18,7 +18,7 @@ namespace Tests
         // A UnityTest behaves like a coroutine in Play Mode. In Edit Mode you can use
         // `yield return null;` to skip a frame.
         [UnityTest]
-        public IEnumerator xrlinrendererTestsWithEnumeratorPasses()
+        public IEnumerator XRLineRendererTestsWithEnumeratorPasses()
         {
             // Use the Assert class to test conditions.
             // Use yield to skip a frame.

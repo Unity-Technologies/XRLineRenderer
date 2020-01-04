@@ -3,7 +3,7 @@ An XR-Optimized line renderer that is also capable of producing very inexpensive
 
 ## Setup and usage
 
-1. Place the XRLineRenderer folder into Assets\XR Utilities\XRLineRenderer in your project.
+1. Import the XRLineRenderer package in your project.
 
 2. Add a XRLineRenderer or XRTrailRenderer component to your gameobject.  The interface is nearly identical to the built in Unity Line and Trail Renderers.
 

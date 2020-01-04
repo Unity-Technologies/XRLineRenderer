@@ -1,5 +1,5 @@
 ﻿{
-    "name": "Tests.xrlinerenderer_Tests",
+    "name": "Unity.Labs.XRLineRenderer.Tests",
     "optionalUnityReferences": [
         "TestAssemblies"
     ]
