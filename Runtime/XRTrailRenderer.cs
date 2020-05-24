@@ -1,7 +1,7 @@
 using System;
 using UnityEngine;
 
-namespace Unity.Labs.XR
+namespace Unity.XRLineRenderer
 {
     /// <summary>
     /// An XR-Focused drop-in replacement for the Trail Renderer

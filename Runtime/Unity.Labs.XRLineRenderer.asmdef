@@ -1,5 +1,5 @@
 {
-    "name": "Unity.Labs.XRLineRenderer",
+    "name": "Unity.XRLineRenderer",
     "references": [],
     "optionalUnityReferences": [],
     "includePlatforms": [],

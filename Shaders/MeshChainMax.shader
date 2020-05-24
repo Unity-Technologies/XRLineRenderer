@@ -43,5 +43,5 @@ Shader "XRLineRenderer/MeshChain - Max Color"
         }
     }
     FallBack "Diffuse"
-    CustomEditor "Unity.Labs.XR.MeshChainShaderGUI"
+    CustomEditor "Unity.XRLineRenderer.MeshChainShaderGUI"
 }

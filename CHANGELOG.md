@@ -12,4 +12,4 @@ Fix an issue where m_Width was not taken into account for startWidth and endWidt
 
 ## [0.1.0-preview] - 2019-11-25
 
-### This is the first release of *Unity Package \<com.unity.labs.xrlinerenderer\>*.
+### This is the first release of *Unity Package \<com.unity.xrlinerenderer\>*.

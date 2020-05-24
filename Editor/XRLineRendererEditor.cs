@@ -1,7 +1,7 @@
 ﻿using UnityEditor;
 using UnityEngine;
 
-namespace Unity.Labs.XR
+namespace Unity.XRLineRenderer
 {
     [CustomEditor(typeof(XRLineRenderer))]
     [CanEditMultipleObjects]
