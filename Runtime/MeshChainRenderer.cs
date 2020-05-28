@@ -1,7 +1,7 @@
 ﻿using System;
 using UnityEngine;
 
-namespace Unity.XRLineRenderer
+namespace Unity.XRTools.Rendering
 {
     /// <summary>
     /// A unified base class for the XR Line Renderer and XR Trail Renderer

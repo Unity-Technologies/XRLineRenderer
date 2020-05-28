@@ -43,5 +43,5 @@ Shader "XRLineRenderer/MeshChain - Min Color"
         }
     }
     FallBack "Diffuse"
-    CustomEditor "Unity.XRLineRenderer.MeshChainShaderGUI"
+    CustomEditor "Unity.XRTools.Rendering.MeshChainShaderGUI"
 }

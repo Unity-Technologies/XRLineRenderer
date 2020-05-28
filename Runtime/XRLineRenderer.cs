@@ -1,7 +1,7 @@
 ﻿using UnityEngine;
 using UnityEngine.Serialization;
 
-namespace Unity.XRLineRenderer
+namespace Unity.XRTools.Rendering
 {
     /// <summary>
     /// An XR-Focused drop-in replacement for the Line Renderer
