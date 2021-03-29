@@ -37,7 +37,7 @@ Material:
     - _lineRadius: 0.5
     - _lineRadiusMin: 0
     m_Colors:
-    - _Color: {r: 0, g: 0.21568628, b: 1, a: 1}
+    - _Color: {r: 0, g: 0.2156862, b: 1, a: 1}
     - _EmissionColor: {r: 0, g: 0, b: 0, a: 1}
     - _lineColor: {r: 0, g: 0.21379282, b: 1, a: 1}
     - _lineRadius: {r: 1, g: 0, b: 100, a: 1}

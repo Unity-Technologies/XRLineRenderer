@@ -150,12 +150,18 @@
         // Calculate the how close to the center of the billboard or pipe we are, and convert
         // that to a brightness value
         half lineAlpha = 1 - saturate(length(texCoord * 2 - float2(1.0, 1.0)));
-        lineAlpha = lerp(1, 1 - applyLevels(lineAlpha, _lineSettings.rgb), i.color.a);
+        lineAlpha = 1 + lerp(0, applyLevels(lineAlpha, _lineSettings.rgb), i.color.a);
         return half4(0, 0, 0, lineAlpha);
     }
 
     half4 fragColor(meshChain_vertex i) : COLOR
     {
-        return half4(i.color.rgb,1);
+        return half4(-i.color.rgb,1);
     }
+
+    half4 fragFauxAlphaColor(meshChain_vertex i) : COLOR
+    {
+        return half4((i.color.rgb - half3(.25,.25,.25)) * -2,1);
+    }
+
 #endif // MESH_CHAIN
