@@ -275,6 +275,15 @@ namespace Unity.XRTools.Rendering
         }
 
         /// <summary>
+        /// Manually trigger the mesh data to be refreshed. This is automatically done in LateUpdate if anything has changed.
+        /// </summary>
+        public void RefreshMesh()
+        {
+            m_XRMeshData.RefreshMesh();
+            m_MeshNeedsRefreshing = false;
+        }
+
+        /// <summary>
         /// Cleans up the visible interface of the MeshRenderer by hiding unneeded components
         /// Also makes sure the animation curves are set up properly to defaults
         /// </summary>
