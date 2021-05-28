@@ -5,6 +5,9 @@ nonblocking_test_editors:
   - version: 2019.4
   - version: 2020.1
   - version: 2020.2
+  - version: 2020.3
+  - version: 2021.1
+  - version: 2021.2
 test_platforms:
   - name: win
     type: Unity::VM
@@ -26,7 +29,7 @@ test_{{ platform.name }}_{{ editor.version }}:
     flavor: {{ platform.flavor}}
   commands:
     - npm install upm-ci-utils@stable -g --registry https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-npm
-    - {% if platform.name == "centos" %}DISPLAY=:0 {% endif %}upm-ci package test -u {{ editor.version }} --package-path . --type package-tests
+    - {% if platform.name == "centos" %}DISPLAY=:0 {% endif %}upm-ci package test -u {{ editor.version }} --package-path . --type package-tests --enable-code-coverage --extra-create-project-arg="-upmNoDefaultPackages"
   artifacts:
     logs:
       paths:
@@ -46,7 +49,7 @@ test_{{ platform.name }}_{{ editor.version }}:
     flavor: {{ platform.flavor}}
   commands:
     - npm install upm-ci-utils@stable -g --registry https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-npm
-    - {% if platform.name == "centos" %}DISPLAY=:0 {% endif %}upm-ci package test -u {{ editor.version }} --package-path . --type package-tests
+    - {% if platform.name == "centos" %}DISPLAY=:0 {% endif %}upm-ci package test -u {{ editor.version }} --package-path . --type package-tests --enable-code-coverage --extra-create-project-arg="-upmNoDefaultPackages"
   artifacts:
     logs:
       paths:
@@ -68,7 +71,7 @@ validate_{{ platform.name }}_{{ editor.version }}:
     flavor: {{ platform.flavor}}
   commands:
     - npm install upm-ci-utils@stable -g --registry https://artifactory.prd.cds.internal.unity3d.com/artifactory/api/npm/upm-npm
-    - {% if platform.name == "centos" %}DISPLAY=:0 {% endif %}upm-ci package test -u {{ editor.version }} --package-path . --type vetting-tests --platform editmode
+    - {% if platform.name == "centos" %}DISPLAY=:0 {% endif %}upm-ci package test -u {{ editor.version }} --package-path . --type vetting-tests --platform editmode --extra-create-project-arg="-upmNoDefaultPackages"
   artifacts:
     logs:
       paths:
