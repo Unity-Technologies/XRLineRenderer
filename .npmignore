@@ -24,3 +24,9 @@ upm-ci~/**
 *.zip*
 TestRunnerOptions.json
 .idea/**
+.bin/**
+.download/**
+
+*.api
+*.api.meta
+
