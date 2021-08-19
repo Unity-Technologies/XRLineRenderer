@@ -30,3 +30,4 @@ TestRunnerOptions.json
 *.api
 *.api.meta
 
+.editorconfig
