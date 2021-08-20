@@ -1,0 +1,106 @@
+// This file is generated. Do not modify by hand.
+// XML documentation file not found. To check if public methods have XML comments,
+// make sure the XML doc file is present and located next to the scraped dll
+namespace Unity.XRTools.Rendering
+{
+    [UnityEngine.DisallowMultipleComponent] [UnityEngine.ExecuteInEditMode] [UnityEngine.RequireComponent(typeof(UnityEngine.MeshFilter))] [UnityEngine.RequireComponent(typeof(UnityEngine.MeshRenderer))] public abstract class MeshChainRenderer : UnityEngine.MonoBehaviour
+    {
+        [UnityEngine.SerializeField] [UnityEngine.Tooltip(@"The gradient describing color along the line.")] protected UnityEngine.Gradient m_Color;
+        [UnityEngine.SerializeField] [UnityEngine.Tooltip(@"Materials to use when rendering.")] protected UnityEngine.Material[] m_Materials;
+        protected bool m_MeshNeedsRefreshing;
+        [UnityEngine.HideInInspector] [UnityEngine.SerializeField] protected UnityEngine.MeshRenderer m_MeshRenderer;
+        protected float m_StepSize;
+        [UnityEngine.SerializeField] [UnityEngine.Tooltip(@"The multiplier applied to the curve, describing the width (in world space) along the line.")] protected float m_Width;
+        [UnityEngine.SerializeField] [UnityEngine.Tooltip(@"The curve describing the width of the line at various points along its length.")] protected UnityEngine.AnimationCurve m_WidthCurve;
+        protected Unity.XRTools.Rendering.XRMeshChain m_XRMeshData;
+        public UnityEngine.Color colorEnd { get; set; }
+        public UnityEngine.Gradient colorGradient { get; set; }
+        public UnityEngine.Color colorStart { get; set; }
+        public virtual UnityEngine.Material material { get; set; }
+        public virtual UnityEngine.Material[] materials { get; set; }
+        public virtual UnityEngine.Material sharedMaterial { get; set; }
+        public virtual UnityEngine.Material[] SharedMaterials { get; set; }
+        public UnityEngine.AnimationCurve widthCurve { get; set; }
+        public float widthEnd { get; set; }
+        public float widthMultiplier { get; set; }
+        public float widthStart { get; set; }
+        protected MeshChainRenderer() {}
+        protected virtual void Awake();
+        protected virtual void Initialize(bool generate = True);
+        protected virtual void LateUpdate();
+        protected virtual bool NeedsReinitialize();
+        protected virtual void OnDisable();
+        protected virtual void OnEnable();
+        public static UnityEngine.Renderer op_Implicit(Unity.XRTools.Rendering.MeshChainRenderer meshChainRenderer);
+        public void RefreshMesh();
+        public void SetTotalColor(UnityEngine.Color newColor);
+        public void SetTotalWidth(float newWidth);
+        protected virtual void UpdateColors();
+        protected virtual void UpdateWidth();
+    }
+
+    [UnityEngine.ExecuteInEditMode] [UnityEngine.RequireComponent(typeof(UnityEngine.MeshFilter))] [UnityEngine.RequireComponent(typeof(UnityEngine.MeshRenderer))] public class XRLineRenderer : Unity.XRTools.Rendering.MeshChainRenderer
+    {
+        public bool loop { get; set; }
+        public virtual UnityEngine.Material material { get; set; }
+        public virtual UnityEngine.Material[] materials { get; set; }
+        public virtual UnityEngine.Material sharedMaterial { get; set; }
+        public virtual UnityEngine.Material[] SharedMaterials { get; set; }
+        public bool useWorldSpace { get; set; }
+        public XRLineRenderer() {}
+        public UnityEngine.Vector3 GetPosition(int index);
+        public int GetPositions(UnityEngine.Vector3[] positions);
+        public int GetVertexCount();
+        protected virtual void Initialize(bool setMesh = True);
+        protected virtual bool NeedsReinitialize();
+        public void SetPosition(int index, UnityEngine.Vector3 position);
+        public void SetPositions(UnityEngine.Vector3[] newPositions, bool knownSizeChange = False);
+        public void SetVertexCount(int count);
+        protected virtual void UpdateColors();
+        protected virtual void UpdateWidth();
+    }
+
+    public class XRMeshChain
+    {
+        public bool centerAtRoot { get; set; }
+        public int reservedElements { get; }
+        public bool worldSpaceData { get; set; }
+        public XRMeshChain() {}
+        public void GenerateMesh(UnityEngine.GameObject owner, bool dynamic, int totalElements, bool setMesh = True);
+        public void RefreshMesh();
+        public void SetElementColor(int elementIndex, ref UnityEngine.Color color);
+        public void SetElementColor(int elementIndex, ref UnityEngine.Color startColor, ref UnityEngine.Color endColor);
+        public void SetElementColor32(int elementIndex, ref UnityEngine.Color32 color);
+        public void SetElementColor32(int elementIndex, ref UnityEngine.Color32 startColor, ref UnityEngine.Color32 endColor);
+        public void SetElementPipe(int elementIndex, ref UnityEngine.Vector3 startPoint, ref UnityEngine.Vector3 endPoint);
+        public void SetElementPosition(int elementIndex, ref UnityEngine.Vector3 position);
+        public void SetElementSize(int elementIndex, float sizeModification);
+        public void SetElementSize(int elementIndex, float startSize, float endSize);
+        public void SetMeshDataDirty(Unity.XRTools.Rendering.XRMeshChain.MeshRefreshFlag dataThatNeedsUpdate);
+        [System.Flags] public enum MeshRefreshFlag
+        {
+            public const Unity.XRTools.Rendering.XRMeshChain.MeshRefreshFlag All = 7;
+            public const Unity.XRTools.Rendering.XRMeshChain.MeshRefreshFlag Colors = 2;
+            public const Unity.XRTools.Rendering.XRMeshChain.MeshRefreshFlag None = 0;
+            public const Unity.XRTools.Rendering.XRMeshChain.MeshRefreshFlag Positions = 1;
+            public const Unity.XRTools.Rendering.XRMeshChain.MeshRefreshFlag Sizes = 4;
+            public int value__;
+        }
+    }
+
+    [UnityEngine.ExecuteInEditMode] [UnityEngine.RequireComponent(typeof(UnityEngine.MeshFilter))] [UnityEngine.RequireComponent(typeof(UnityEngine.MeshRenderer))] public class XRTrailRenderer : Unity.XRTools.Rendering.MeshChainRenderer
+    {
+        public bool autodestruct { get; set; }
+        public float minVertexDistance { get; set; }
+        public int positionCount { get; }
+        public bool smoothInterpolation { get; set; }
+        public float time { get; set; }
+        public XRTrailRenderer() {}
+        public void Clear();
+        public void EditorCheckForUpdate();
+        protected virtual void Initialize(bool setMesh = True);
+        protected virtual void LateUpdate();
+        protected virtual bool NeedsReinitialize();
+        protected virtual void OnEnable();
+    }
+}

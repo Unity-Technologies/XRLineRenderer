@@ -1,0 +1,26 @@
+# Editors used for test before publication
+blocking_test_editors:
+  - version: 2019.1.14f1
+
+# Other editor versions used for tests
+nonblocking_test_editors:
+  - version: 2019.4
+  - version: 2020.1
+  - version: 2020.2
+  - version: 2020.3
+  - version: 2021.1
+  - version: 2021.2
+
+# Platforms that will be tested
+test_platforms:
+  - name: Windows
+    type: Unity::VM
+    image: package-ci/win10:stable
+    flavor: b1.large
+  - name: MacOS
+    type: Unity::VM::osx
+    image: package-ci/mac:stable
+    flavor: m1.mac
+
+urls:
+  upm: https://artifactory.prd.it.unity3d.com/artifactory/api/npm/upm-npm
