@@ -8,6 +8,7 @@ Documentation~/ApiDocs/**
 .npmrc
 .npmignore
 .gitignore
+.gitattributes
 CONTRIBUTING.md
 CONTRIBUTING.md.meta
 QAReport.md
@@ -17,6 +18,8 @@ build.sh
 build.sh.meta
 build.bat
 build.bat.meta
+
+.github/**
 
 upm-ci~/**
 .Editor/**
