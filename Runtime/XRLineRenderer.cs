@@ -156,9 +156,13 @@ namespace Unity.XRTools.Rendering
             var prevIndex = (index - 1 + m_Positions.Length) % m_Positions.Length;
             var endIndex = (index + 1) % m_Positions.Length;
 
-            if (index > 0 || m_Loop)
+            if (index > 0)
             {
                 m_XRMeshData.SetElementPipe((index * 2) - 1, ref m_Positions[prevIndex], ref m_Positions[index]);
+            }
+            else if (m_Loop)
+            {
+                m_XRMeshData.SetElementPipe((m_Positions.Length * 2) - 1, ref m_Positions[prevIndex], ref m_Positions[index]);
             }
 
             m_XRMeshData.SetElementPosition(index * 2, ref m_Positions[index]);
