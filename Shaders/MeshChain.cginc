@@ -82,8 +82,8 @@
         // Whether this element is a billboard or a pipe is encoded in the secondary texture coordinates
         // A 0 on the u coordinate specifies using the billboard rendering mode
         // A 1 on the u coordinate specifies using the pipe rendering mode
-        o.pos.x += lerp(billboardVec.x, perpVec.x, pipeFlag) * expandDistanceSource;
-        o.pos.y += lerp(billboardVec.y, perpVec.y, pipeFlag) * expandDistanceSource*aspectRatio;
+        o.pos.x += (pipeFlag ? perpVec.x : billboardVec.x) * expandDistanceSource;
+        o.pos.y += (pipeFlag ? perpVec.y : billboardVec.y) * expandDistanceSource*aspectRatio;
 
         // We store the w coordinate of the worldspace position separately here
         // We need to conditionally undo the perspective correction on these UV coordinates
