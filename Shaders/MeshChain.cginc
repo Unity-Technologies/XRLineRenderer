@@ -9,6 +9,7 @@
 
     struct appdata_meshChain
     {
+        UNITY_VERTEX_INPUT_INSTANCE_ID
         float4 vertex : POSITION;
         float4 texcoord : TEXCOORD0;
         float4 texcoord1 : TEXCOORD1;
@@ -17,6 +18,8 @@
 
     struct meshChain_vertex
     {
+        UNITY_VERTEX_INPUT_INSTANCE_ID
+        UNITY_VERTEX_OUTPUT_STEREO
         float4  pos : SV_POSITION;
         float4  uv : TEXCOORD0;
         fixed4 color : COLOR;
@@ -25,6 +28,10 @@
     meshChain_vertex vert(appdata_meshChain v)
     {
         meshChain_vertex o;
+        UNITY_INITIALIZE_OUTPUT(meshChain_vertex, o);
+        UNITY_SETUP_INSTANCE_ID(v);
+        UNITY_TRANSFER_INSTANCE_ID(v,o);
+        UNITY_INITIALIZE_VERTEX_OUTPUT_STEREO(o);
 
         // In 5.4 and later we have stereo instance rendering so we go through the
         // ClipPos function which is aware of the proper projection matrix per-eye
@@ -75,8 +82,8 @@
         // Whether this element is a billboard or a pipe is encoded in the secondary texture coordinates
         // A 0 on the u coordinate specifies using the billboard rendering mode
         // A 1 on the u coordinate specifies using the pipe rendering mode
-        o.pos.x += lerp(billboardVec.x, perpVec.x, pipeFlag) * expandDistanceSource;
-        o.pos.y += lerp(billboardVec.y, perpVec.y, pipeFlag) * expandDistanceSource*aspectRatio;
+        o.pos.x += (pipeFlag ? perpVec.x : billboardVec.x) * expandDistanceSource;
+        o.pos.y += (pipeFlag ? perpVec.y : billboardVec.y) * expandDistanceSource*aspectRatio;
 
         // We store the w coordinate of the worldspace position separately here
         // We need to conditionally undo the perspective correction on these UV coordinates
@@ -117,6 +124,8 @@
 
     half4 frag(meshChain_vertex i) : COLOR
     {
+        UNITY_SETUP_INSTANCE_ID(i);
+
         // This used to be a texture lookup, we have now turned it into pure math
         // Undo the perspective correction
         float2 texCoord = i.uv.xy / i.uv.w;
